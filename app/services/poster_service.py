@@ -4,7 +4,7 @@ from app.engine.renderer import render_poster
 from app.utils.hebrew_utils import process_hebrew
 
 
-def generate_poster(image_path, headline, content, font_path, use_ai):
+def generate_poster(image_path, headline, content, font_path="fonts/Inter-Bold.ttf", use_ai=False):
 
     language = detect_language(headline)
 

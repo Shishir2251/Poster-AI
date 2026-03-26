@@ -2,60 +2,46 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Project root
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
 
 class Settings:
 
-    # API Settings
-    PROJECT_NAME: str = "Poster Generation API"
-    API_VERSION: str = "1.0"
+    def __init__(self):
+        # API Settings
+        self.PROJECT_NAME = "Poster Generation API"
+        self.API_VERSION = "1.0"
 
-    # OpenAI
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+        # OpenAI
+        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+        self.OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.OPENAI_TEMPERATURE = float(os.getenv("OPENAI_TEMPERATURE", "0.9"))
 
-    OPENAI_MODEL: str = os.getenv(
-        "OPENAI_MODEL",
-        "gpt-4o-mini"
-    )
+        # File Storage
+        self.UPLOAD_DIR = BASE_DIR / "uploads"
+        self.GENERATED_DIR = BASE_DIR / "generated"
+        self.FONT_DIR = BASE_DIR / "fonts"
 
-    OPENAI_TEMPERATURE: float = float(
-        os.getenv("OPENAI_TEMPERATURE", 0.9)
-    )
+        # System Limits
+        self.MAX_REGENERATIONS = 3
+        self.MAX_IMAGE_SIZE_MB = 10
+        self.ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg"]
 
-    # File Storage
-    UPLOAD_DIR: Path = BASE_DIR / "uploads"
-    GENERATED_DIR: Path = BASE_DIR / "generated"
-    FONT_DIR: Path = BASE_DIR / "fonts"
+        # Performance
+        self.MAX_CONCURRENT_USERS_PER_MIN = 100
+        self.MAX_USERS_PER_DAY = 1000
 
-    # System Limits
-    MAX_REGENERATIONS: int = 3
+        # Poster Defaults
+        self.DEFAULT_HEADLINE_FONT = "Inter-Bold.ttf"
+        self.DEFAULT_BODY_FONT = "Inter-Regular.ttf"
+        self.DEFAULT_POSTER_WIDTH = 1080
+        self.DEFAULT_POSTER_HEIGHT = 1080
 
-    MAX_IMAGE_SIZE_MB: int = 10
-
-    ALLOWED_IMAGE_TYPES = [
-        "image/png",
-        "image/jpeg",
-        "image/jpg"
-    ]
-
-    # Performance
-    MAX_CONCURRENT_USERS_PER_MIN: int = 100
-    MAX_USERS_PER_DAY: int = 1000
-
-    # Poster Defaults
-    DEFAULT_HEADLINE_FONT = "Inter-Bold.ttf"
-    DEFAULT_BODY_FONT = "Inter-Regular.ttf"
-
-    DEFAULT_POSTER_WIDTH = 1080
-    DEFAULT_POSTER_HEIGHT = 1080
-
-    # Language
-    DEFAULT_LANGUAGE = "en"
-    HEBREW_LANGUAGE_CODE = "he"
+        # Language
+        self.DEFAULT_LANGUAGE = "en"
+        self.HEBREW_LANGUAGE_CODE = "he"
 
 
 settings = Settings()

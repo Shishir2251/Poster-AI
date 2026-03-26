@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 import shutil
 
 from app.services.poster_service import generate_poster
@@ -7,12 +7,11 @@ router = APIRouter()
 
 
 @router.post("/generate")
-
 async def generate_poster_api(
     image: UploadFile = File(...),
-    headline: str = "",
-    content: str = "",
-    use_ai_content: bool = False
+    headline: str = Form(""),
+    content: str = Form(""),
+    use_ai_content: bool = Form(False)
 ):
 
     image_path = f"uploads/{image.filename}"
