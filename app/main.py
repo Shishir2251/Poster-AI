@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.poster_routes import router as poster_router
 from app.core.config import settings
@@ -16,6 +17,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve generated posters as static files
+app.mount("/generated", StaticFiles(directory="generated"), name="generated")
 
 app.include_router(poster_router, prefix="/api/poster", tags=["poster"])
 

@@ -1,27 +1,37 @@
 import random
-from app.clients.openai_client import generate_marketing_copy
+from app.clients.openai_client import generate_text
+
+
+STYLES = [
+    "exciting marketing copy",
+    "minimal modern advertising copy",
+    "bold social media promotional text",
+    "luxury brand marketing tone",
+    "friendly engaging promotional text",
+    "high-energy startup style marketing"
+]
+
 
 def generate_ai_content(headline, content, language):
 
-    seed = random.randint(1,999999)
+    seed = random.randint(1000, 999999)
+
+    style = random.choice(STYLES)
 
     prompt = f"""
-Generate marketing poster text.
+Write a {style}.
 
-Language must stay the SAME as input language.
-
-Language: {language}
+Language must stay the same as the input.
 
 Headline:
 {headline}
 
-Content:
+Additional context:
 {content}
 
-Variation seed:
-{seed}
+Make the wording creative and different every time.
 
-Return short poster copy.
+Random seed: {seed}
 """
 
-    return generate_marketing_copy(prompt)
+    return generate_text(prompt)
