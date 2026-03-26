@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pillow
+python-multipart
+openai
+langdetect
+python-bidi
+arabic-reshaper
+python-dotenv
+numpy
