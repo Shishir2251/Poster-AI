@@ -37,6 +37,8 @@ def build_prompt(data):
 
     Output Format:{data.output_format}
 
+    Style Preset:{data.style_preset}
+
     The poster should look like a premium advertisement with modern layout,
     balanced typography, and strong visual hierarchy.
     """

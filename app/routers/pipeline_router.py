@@ -25,6 +25,7 @@ async def generate_poster_complete(
     style: str = Form(...),
     poster_style: str = Form(...),
     design_style_prompt: str = Form(...),
+    style_preset: str = Form(...),
     output_format: str = Form(...),
     variations: int = Form(3),
     image: Optional[UploadFile] = File(None)
@@ -61,13 +62,21 @@ async def generate_poster_complete(
     Call To Action: {cta}
 
     Style: {style}
-
     Poster Style: {poster_style}
 
-    Brand Colors:
-    {primary_color} and {secondary_color}
+    Design Style Prompt:
+    {design_style_prompt}
 
-    Design should look like a premium advertisement poster.
+    Brand Colors:
+    Primary: {primary_color}
+    Secondary: {secondary_color}
+
+    Output Format:{output_format}
+
+    Style Preset:{style_preset}
+
+    The poster should look like a premium advertisement with modern layout,
+    balanced typography, and strong visual hierarchy.
     """
 
     posters = []
