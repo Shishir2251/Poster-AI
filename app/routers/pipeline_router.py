@@ -27,7 +27,7 @@ async def generate_poster_complete(
     design_style_prompt: str = Form(...),
     style_preset: str = Form(...),
     output_format: str = Form(...),
-    variations: int = Form(3),
+    variations: int = Form(1),
     image: Optional[UploadFile] = File(None)
 ):
 
@@ -52,6 +52,16 @@ async def generate_poster_complete(
     # STEP 3 — AI Prompt
     base_prompt = f"""
     Create a professional marketing poster.
+
+    IMPORTANT:
+    Use the provided image as the MAIN SUBJECT.
+    Do NOT modify the product or object inside the image.
+
+    Only add:
+    - typography
+    - layout
+    - branding elements
+    - background styling
 
     Aspect Ratio: {output_format}
 
@@ -100,8 +110,11 @@ async def generate_poster_complete(
 
         unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
 
-        poster_file = await generate_poster(unique_prompt, output_format)
-
+        poster_file = await generate_poster(
+        unique_prompt,
+        output_format,
+        uploaded_image_path
+        )
         filename = os.path.basename(poster_file)
 
         posters.append({

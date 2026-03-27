@@ -17,6 +17,16 @@ def build_prompt(data):
     prompt = f"""
     Create a professional marketing poster.
 
+    IMPORTANT:
+    Use the provided image as the MAIN SUBJECT.
+    Do NOT modify the product or object inside the image.
+
+    Only add:
+    - typography
+    - layout
+    - branding elements
+    - background styling
+
     Title: {data.title}
     Subtitle: {data.subtitle}
     Description: {data.description}
@@ -38,6 +48,13 @@ def build_prompt(data):
     Output Format:{data.output_format}
 
     Style Preset:{data.style_preset}
+
+    Layout Rules:
+    Top: Title
+    Middle: Image content
+    Bottom: CTA button
+
+    Keep text inside safe margins.
 
     The poster should look like a premium advertisement with modern layout,
     balanced typography, and strong visual hierarchy.
