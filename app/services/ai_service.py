@@ -1,37 +1,26 @@
-import random
-from app.clients.openai_client import generate_text
+import uuid
+from openai import OpenAI
+from app.config import OPENAI_API_KEY
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-STYLES = [
-    "exciting marketing copy",
-    "minimal modern advertising copy",
-    "bold social media promotional text",
-    "luxury brand marketing tone",
-    "friendly engaging promotional text",
-    "high-energy startup style marketing"
-]
+async def generate_poster(prompt):
 
+    result = client.images.generate(
+        model="gpt-image-1",
+        prompt=prompt,
+        size="1024x1024"
+    )
 
-def generate_ai_content(headline, content, language):
+    image_base64 = result.data[0].b64_json
 
-    seed = random.randint(1000, 999999)
+    file_name = f"poster_{uuid.uuid4()}.png"
+    file_path = f"generated/{file_name}"
 
-    style = random.choice(STYLES)
+    import base64
 
-    prompt = f"""
-Write a {style}.
+    with open(f"generated/{file_name}", "wb") as f:
+        f.write(base64.b64decode(image_base64))
 
-Language must stay the same as the input.
-
-Headline:
-{headline}
-
-Additional context:
-{content}
-
-Make the wording creative and different every time.
-
-Random seed: {seed}
-"""
-
-    return generate_text(prompt)
+    return  f"generated/{file_name}"

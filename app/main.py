@@ -1,29 +1,19 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.poster_routes import router as poster_router
-from app.core.config import settings
+from app.routers.upload_router import router as upload_router
+from app.routers.brand_router import router as brand_router
+from app.routers.variation_router import router as variation_router
+from app.routers.poster_router import router as poster_router
+from app.routers.download_router import router as download_router
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version=settings.API_VERSION,
-)
+app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Serve generated posters as static files
 app.mount("/generated", StaticFiles(directory="generated"), name="generated")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-app.include_router(poster_router, prefix="/api/poster", tags=["poster"])
-
-
-@app.get("/")
-def root():
-    return {"message": f"{settings.PROJECT_NAME} v{settings.API_VERSION} is running"}
+app.include_router(upload_router)
+app.include_router(brand_router)
+app.include_router(variation_router)
+app.include_router(poster_router)
+app.include_router(download_router)
