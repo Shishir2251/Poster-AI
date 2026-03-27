@@ -18,21 +18,27 @@ def build_prompt(data):
     Create a professional marketing poster.
 
     Title: {data.title}
-
     Subtitle: {data.subtitle}
-
     Description: {data.description}
 
     Brand: {data.brand_name}
 
-    Call To Action: {data.cta_text}
+    Call To Action: {data.cta}
 
     Style: {data.style}
+    Poster Style: {data.poster_style}
 
-    Poster style: {random_style}
+    Design Style Prompt:
+    {data.design_style_prompt}
 
-    Design should look like a premium product advertisement poster.
-    Clean typography, modern layout, visually appealing.
+    Brand Colors:
+    Primary: {data.primary_color}
+    Secondary: {data.secondary_color}
+
+    Output Format:{data.output_format}
+
+    The poster should look like a premium advertisement with modern layout,
+    balanced typography, and strong visual hierarchy.
     """
 
     return prompt

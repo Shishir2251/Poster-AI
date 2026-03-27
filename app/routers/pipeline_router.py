@@ -24,6 +24,8 @@ async def generate_poster_complete(
     cta: str = Form(...),
     style: str = Form(...),
     poster_style: str = Form(...),
+    design_style_prompt: str = Form(...),
+    output_format: str = Form(...),
     variations: int = Form(3),
     image: Optional[UploadFile] = File(None)
 ):
