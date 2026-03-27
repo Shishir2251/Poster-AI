@@ -53,6 +53,20 @@ async def generate_poster_complete(
     base_prompt = f"""
     Create a professional marketing poster.
 
+    Aspect Ratio: {output_format}
+
+    IMPORTANT DESIGN RULES:
+    - Keep all text inside safe margins
+    - Leave padding around edges
+    - Do not place text near borders
+    - Ensure title, subtitle and CTA are fully visible
+
+    Layout Guide:
+    Top: Title
+    Below title: Subtitle
+    Center: Main visual or product
+    Bottom: Call to action
+
     Title: {title}
     Subtitle: {subtitle}
     Description: {description}
@@ -86,15 +100,15 @@ async def generate_poster_complete(
 
         unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
 
-        poster_file = await generate_poster(unique_prompt)
+        poster_file = await generate_poster(unique_prompt, output_format)
 
         filename = os.path.basename(poster_file)
 
         posters.append({
-            "poster_name": poster_file,
-            "view_url": f"http://127.0.0.1:8000/generated/{poster_file}",
-            "download_url": f"http://127.0.0.1:8000/download/{poster_file}"
-        })
+    "poster_name": filename,
+    "view_url": f"http://127.0.0.1:8000/generated/{filename}",
+    "download_url": f"http://127.0.0.1:8000/download/{filename}"
+     })
 
     # STEP 5 — Return Response
     return {
