@@ -7,7 +7,7 @@ from app.routers.variation_router import router as variation_router
 from app.routers.poster_router import router as poster_router
 from app.routers.download_router import router as download_router
 from app.routers.pipeline_router import router as pipeline_router
-
+from app.routers.ai_helper_router import router as ai_helper_router
 app = FastAPI()
 
 app.mount("/generated", StaticFiles(directory="generated"), name="generated")
@@ -19,3 +19,4 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # app.include_router(poster_router)
 # app.include_router(download_router)
 app.include_router(pipeline_router)
+app.include_router(ai_helper_router, tags=["AI Content Assistant"])

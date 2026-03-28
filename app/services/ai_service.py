@@ -4,6 +4,9 @@ import base64
 import random
 from openai import OpenAI
 from dotenv import load_dotenv
+from rembg import remove
+from PIL import Image
+import json
 
 load_dotenv()
 
@@ -27,6 +30,29 @@ def get_image_size(output_format: str):
     }
 
     return size_map.get(output_format, "1024x1024")
+
+def remove_background(input_path):
+
+    output_path = input_path.replace(".", "_no_bg.")
+
+    try:
+        # verify image
+        with Image.open(input_path) as img:
+            img.verify()
+
+        with open(input_path, "rb") as i:
+            input_bytes = i.read()
+
+        output_bytes = remove(input_bytes)
+
+        with open(output_path, "wb") as o:
+            o.write(output_bytes)
+
+        return output_path
+
+    except Exception as e:
+        print("Background removal failed:", e)
+        return input_path
 
 
 # -----------------------------------------
@@ -68,6 +94,8 @@ Creative seed: {creative_seed}
         # -----------------------------
         if image_path and os.path.exists(image_path):
 
+            image_path = remove_background(image_path)
+
             with open(image_path, "rb") as img:
 
                 result = client.images.edit(
@@ -101,4 +129,62 @@ Creative seed: {creative_seed}
 
     except Exception as e:
         print("Image generation error:", e)
+        raise
+# AI Poster Idea → Structured Fields
+async def generate_poster_fields(user_idea: str):
+
+    prompt = f"""
+You are a professional poster designer.
+
+A user will describe a poster idea.
+
+Your task is to convert the idea into structured poster inputs.
+
+Return ONLY valid JSON with these fields:
+
+title
+subtitle
+description
+cta
+design_style
+color_theme
+layout_hint
+
+Rules:
+- title must be short and catchy
+- subtitle supports the title
+- description explains the offer/event
+- cta should be a short action phrase
+- design_style should describe the visual style
+- color_theme should be 2–3 colors
+- layout_hint should explain image/text placement
+
+User Idea:
+{user_idea}
+"""
+
+    try:
+
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "You are an expert poster designer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7
+        )
+
+        content = response.choices[0].message.content
+
+        try:
+            return json.loads(content)
+
+        except json.JSONDecodeError:
+            return {
+                "error": "AI returned non JSON output",
+                "raw_output": content
+            }
+
+    except Exception as e:
+        print("AI field generation error:", e)
         raise
