@@ -58,7 +58,7 @@ Requirements:
                     prompt=prompt,
                     image=img,
                     size="1024x1024",
-                    n=3
+                    n=1
                 )
 
         else:
@@ -67,7 +67,7 @@ Requirements:
                 model="gpt-image-1",
                 prompt=prompt,
                 size="1024x1024",
-                n=3
+                n=1
             )
 
         logos = []
@@ -83,7 +83,7 @@ Requirements:
             with open(path, "wb") as f:
                 f.write(image_bytes)
 
-            logos.append(filename)
+            logos.append(f"/generated/{filename}")
 
         return logos
 

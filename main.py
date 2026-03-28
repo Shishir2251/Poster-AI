@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+import os
 
 from app.routers.upload_router import router as upload_router
 from app.routers.brand_router import router as brand_router
@@ -11,7 +12,9 @@ from app.routers.ai_helper_router import router as ai_helper_router
 from app.routers.logo_router import router as logo_router
 app = FastAPI()
 
-app.mount("/generated", StaticFiles(directory="generated"), name="generated")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app.mount("/generated", StaticFiles(directory=os.path.join(BASE_DIR,"generated")), name="generated")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # app.include_router(upload_router)
