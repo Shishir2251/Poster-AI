@@ -22,8 +22,8 @@ async def generate_poster_complete(
     primary_color: str = Form(...),
     secondary_color: str = Form(...),
     cta: str = Form(...),
-    style: str = Form(...),
-    poster_style: str = Form(...),
+    #style: str = Form(...),
+    #poster_style: str = Form(...),
     design_style_prompt: str = Form(...),
     style_preset: str = Form(...),
     output_format: str = Form(...),
@@ -84,9 +84,6 @@ async def generate_poster_complete(
     Brand: {brand_name}
 
     Call To Action: {cta}
-
-    Style: {style}
-    Poster Style: {poster_style}
 
     Design Style Prompt:
     {design_style_prompt}
