@@ -8,4 +8,4 @@ python-bidi
 arabic-reshaper
 python-dotenv
 numpy
-rembg
+rembg[cpu]

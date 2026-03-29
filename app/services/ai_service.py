@@ -23,13 +23,13 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 def get_image_size(output_format: str):
 
     size_map = {
-        "1:1": "1080x1080",
-        "4:5": "1080x1350",
-        "9:16": "1080x1920",
-        "16:9": "1920x1080"
+        "1:1": "1024x1024",
+        "4:5": "1024x1536",
+        "9:16": "1024x1536",
+        "16:9": "1536x1024"
     }
 
-    return size_map.get(output_format, "10804x1080")
+    return size_map.get(output_format, "1024x1024")
 
 def remove_background(input_path):
 
