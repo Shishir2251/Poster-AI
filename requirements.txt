@@ -9,3 +9,4 @@ arabic-reshaper
 python-dotenv
 numpy
 rembg[cpu]
+onnxruntime
