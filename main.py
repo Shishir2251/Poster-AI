@@ -12,6 +12,7 @@ from app.routers.ai_helper_router import router as ai_helper_router
 from app.routers.logo_router import router as logo_router
 app = FastAPI()
 
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app.mount("/generated", StaticFiles(directory=os.path.join(BASE_DIR,"generated")), name="generated")
