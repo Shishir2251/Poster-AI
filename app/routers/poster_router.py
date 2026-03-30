@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 import os
 
 router = APIRouter()
@@ -6,13 +6,14 @@ router = APIRouter()
 POSTER_DIR = "generated"
 
 @router.get("/posters")
-async def list_posters():
+async def list_posters(request: Request):  # fix 1, import Request and add it as a parameter
 
     posters = []
 
-    for file in os.listdir(POSTER_DIR):
+    base_url = str(request.base_url).rstrip("/")  # fix 2, dynamically get the base URL
 
-        posters.append(f"http://127.0.0.1:8000/generated/{file}")
+    for file in os.listdir(POSTER_DIR):
+        posters.append(f"{base_url}/generated/{file}")  # fix 3, use the dynamic base URL instead of hardcoding it
 
     return {
         "posters": posters

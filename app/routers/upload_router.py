@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Request
 import uuid
 import os
 
@@ -7,10 +7,9 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(request: Request, file: UploadFile = File(...)):  # fix 1, import Request and add it as a parameter
 
     file_ext = file.filename.split(".")[-1]
     file_name = f"{uuid.uuid4()}.{file_ext}"
@@ -20,7 +19,10 @@ async def upload_image(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
+    # fix 2, dynamically get the base URL instead of hardcoding it
+    base_url = str(request.base_url).rstrip("/")
+
     return {
         "status": "success",
-        "image_url": f"http://127.0.0.1:8000/uploads/{file_name}"
+        "image_url": f"{base_url}/uploads/{file_name}"
     }
