@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Request
 import uuid
 import os
 from typing import Optional
@@ -15,6 +15,7 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 
 @router.post("/generate-poster-complete")
 async def generate_poster_complete(
+    request: Request,  # fix 1, importing the request
     title: str = Form(...),
     subtitle: str = Form(...),
     description: str = Form(...),
@@ -22,8 +23,6 @@ async def generate_poster_complete(
     primary_color: str = Form(...),
     secondary_color: str = Form(...),
     cta: str = Form(...),
-    #style: str = Form(...),
-    #poster_style: str = Form(...),
     design_style_prompt: str = Form(...),
     style_preset: str = Form(...),
     output_format: str = Form(...),
@@ -100,6 +99,9 @@ async def generate_poster_complete(
     balanced typography, and strong visual hierarchy.
     """
 
+    #  Dynamic base URL
+    base_url = str(request.base_url).rstrip("/")
+
     posters = []
 
     # STEP 4 — Generate Variations
@@ -108,17 +110,18 @@ async def generate_poster_complete(
         unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
 
         poster_file = await generate_poster(
-        unique_prompt,
-        output_format,
-        uploaded_image_path
+            unique_prompt,
+            output_format,
+            uploaded_image_path
         )
+
         filename = os.path.basename(poster_file)
 
         posters.append({
-    "poster_name": filename,
-    "view_url": f"http://127.0.0.1:8000/generated/{filename}",
-    "download_url": f"http://127.0.0.1:8000/download/{filename}"
-     })
+            "poster_name": filename,
+            "view_url": f"{base_url}/generated/{filename}", # base url based on render server
+            "download_url": f"{base_url}/download/{filename}"
+        })
 
     # STEP 5 — Return Response
     return {
