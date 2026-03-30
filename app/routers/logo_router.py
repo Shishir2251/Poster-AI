@@ -38,8 +38,8 @@
 #     for path in result:
 #         filename = os.path.basename(path)
 #         logos.append({
-#             "view_url": f"http://127.0.0.1:8000/generated/{filename}",
-#             "download_url": f"http://127.0.0.1:8000/download/{filename}"
+#             "view_url": f"https://poster-ai-1.onrender.com/{filename}",
+#             "download_url": f"https://poster-ai-1.onrender.com/{filename}"
 #         })
 
 #     return {
