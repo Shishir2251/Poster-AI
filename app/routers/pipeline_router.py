@@ -26,6 +26,7 @@ async def generate_poster_complete(
     design_style_prompt: str = Form(...),
     style_preset: str = Form(...),
     output_format: str = Form(...),
+    language: str = Form("English"), # poster lanugae, default to english but can be set to other languages
     variations: int = Form(1),
     image: Optional[UploadFile] = File(None)
 ):

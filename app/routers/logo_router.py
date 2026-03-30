@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, Request
 from app.services.logo_service import generate_logo
 import os
+from schemas import get_language_rules
 
 router = APIRouter()
 
@@ -13,6 +14,7 @@ async def generate_logo_api(
     industry: str = Form(None),
     logo_style: str = Form(None),
     color_palette: str = Form(None),
+    language: str = Form("English"), # english default, but can be set to other languages
     reference_image: UploadFile = File(None)
 ):
     image_path = None
@@ -31,7 +33,8 @@ async def generate_logo_api(
         "vision": vision,
         "industry": industry,
         "logo_style": logo_style,
-        "color_palette": color_palette
+        "color_palette": color_palette,
+        "language": language
     }
 
     result = await generate_logo(data, image_path)
