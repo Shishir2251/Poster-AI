@@ -2,7 +2,7 @@ import os
 import uuid
 import base64
 from openai import OpenAI
-from schemas import get_language_rules
+from app.schemas import get_language_rules
 
 client = OpenAI()
 
@@ -18,9 +18,14 @@ async def generate_logo(data, image_path=None):
     industry = data.get("industry", "")
     logo_style = data.get("logo_style", "")
     color_palette = data.get("color_palette", "")
+    language = data.get("language", "English")
+
+    language_rules = get_language_rules(language)
 
     prompt = f"""
 Design a professional vector logo.
+
+{language_rules}
 
 Brand Name: {brand_name}
 Tagline: {tagline}

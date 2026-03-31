@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from rembg import remove
 from PIL import Image
 import json
+from app.schemas import get_language_rules
 
 load_dotenv()
 
@@ -15,6 +16,7 @@ client = OpenAI()
 
 GENERATED_DIR = "generated"
 os.makedirs(GENERATED_DIR, exist_ok=True)
+
 
 
 # -----------------------------------------

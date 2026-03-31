@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, Request
 from app.services.logo_service import generate_logo
 import os
-from schemas import get_language_rules
+from app.schemas import get_language_rules
 
 router = APIRouter()
 

@@ -13,7 +13,7 @@ class PosterRequest(BaseModel):
 
 
 def get_language_rules(language: str):
-    rtl_languages = ["Hebrew", "Arabic", "Urdu"]
+    rtl_languages = ["hebrew", "arabic", "urdu"]
 
     rules = f"""
 LANGUAGE RULE:
@@ -27,6 +27,7 @@ LANGUAGE RULE:
 TEXT DIRECTION RULE:
 - Use right-to-left (RTL) layout
 - Align text accordingly
+- Ensure proper grammar and punctuation
 """
 
     return rules
