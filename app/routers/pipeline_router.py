@@ -3,7 +3,7 @@ import uuid
 import os
 from typing import Optional
 from app.services.ai_service import generate_poster
-
+from app.schemas import get_language_rules
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
@@ -26,10 +26,11 @@ async def generate_poster_complete(
     design_style_prompt: str = Form(...),
     style_preset: str = Form(...),
     output_format: str = Form(...),
+    language: str = Form("English"), # poster lanugae, default to english but can be set to other languages
     variations: int = Form(1),
     image: Optional[UploadFile] = File(None)
 ):
-
+    language_rules = get_language_rules(language)
     uploaded_image_path = None
 
     # STEP 1 — Upload Image
@@ -51,6 +52,8 @@ async def generate_poster_complete(
     # STEP 3 — AI Prompt
     base_prompt = f"""
     Create a professional marketing poster.
+
+    {language_rules}
 
     IMPORTANT:
     Use the provided image as the MAIN SUBJECT.
@@ -112,7 +115,8 @@ async def generate_poster_complete(
         poster_file = await generate_poster(
             unique_prompt,
             output_format,
-            uploaded_image_path
+            uploaded_image_path,
+            language
         )
 
         filename = os.path.basename(poster_file)
