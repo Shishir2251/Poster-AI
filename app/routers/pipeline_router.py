@@ -116,7 +116,7 @@ async def generate_poster_complete(
             unique_prompt,
             output_format,
             uploaded_image_path,
-            language
+            # language
         )
 
         filename = os.path.basename(poster_file)
