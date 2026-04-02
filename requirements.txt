@@ -10,3 +10,6 @@ python-dotenv
 numpy
 rembg[cpu]
 onnxruntime
+celery
+redis
+cloudinary
