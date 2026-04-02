@@ -5,12 +5,54 @@ import os
 from app.routers.pipeline_router import router as pipeline_router
 from app.routers.ai_helper_router import router as ai_helper_router
 from app.routers.logo_router import router as logo_router
+from app.worker.tasks import test_task
+from celery.result import AsyncResult
+from app.worker.celery_app import celery_app
+
+
 
 app = FastAPI()
 
 @app.get("/")
 def root():
     return {"message": "Poster AI API is running"}
+
+#endpoint to check celery task status
+@app.get("/test-celery")
+def test_celery():
+    task = test_task.delay(5, 10)
+    return {
+        "job_id": task.id,
+        "status": task.status
+        # "result": task.result   # This will be None immediately after dispatch
+    }
+
+#endpoint to check celery task result
+@app.get("/result/{job_id}")
+def get_result(job_id: str):
+    task_result = AsyncResult(job_id, app=celery_app)
+
+    if task_result.state == "SUCCESS":
+        return{
+            "status": "Task completed!",
+            "result": task_result.result
+        }
+    
+    return {
+        "status": task_result.state
+    }
+
+    
+
+
+    # if task_result.state == 'PENDING':
+    #     return {"status": "Task is still pending..."}
+    # elif task_result.state == 'SUCCESS':
+    #     return {"status": "Task completed!", "result": task_result.result}
+    # else:
+    #     return {"status": f"Task is in state: {task_result.state}"}
+
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
