@@ -8,7 +8,11 @@ from rembg import remove
 from PIL import Image
 import json
 from app.schemas import get_language_rules
+from rembg import new_session, remove
+from app.services.remove_bg import remove_bg_api
+import cloudinary.uploader
 
+session = new_session()  # load model ONLY once
 load_dotenv()
 
 # Initialize OpenAI client
@@ -45,7 +49,7 @@ def remove_background(input_path):
         with open(input_path, "rb") as i:
             input_bytes = i.read()
 
-        output_bytes = remove(input_bytes)
+        output_bytes = remove(input_bytes, session=session) # rembg session for faster processing
 
         with open(output_path, "wb") as o:
             o.write(output_bytes)
@@ -60,7 +64,7 @@ def remove_background(input_path):
 # -----------------------------------------
 # Poster Generator
 # -----------------------------------------
-async def generate_poster(prompt, output_format="1:1", image_path=None):
+def generate_poster(prompt, output_format="1:1", image_path=None):
 
     # ensure variation randomness
     creative_seed = random.randint(1000, 999999)
@@ -96,7 +100,8 @@ Creative seed: {creative_seed}
         # -----------------------------
         if image_path and os.path.exists(image_path):
 
-            image_path = remove_background(image_path)
+            # image_path = remove_background(image_path)
+            image_path = remove_bg_api(image_path) # using remove.bg API for for faster background removal
 
             with open(image_path, "rb") as img:
 
@@ -121,19 +126,25 @@ Creative seed: {creative_seed}
         image_base64 = result.data[0].b64_json
         image_bytes = base64.b64decode(image_base64)
 
-        filename = f"poster_{uuid.uuid4().hex}.png"
-        file_path = os.path.join(GENERATED_DIR, filename)
+        # filename = f"poster_{uuid.uuid4().hex}.png"
+        # file_path = os.path.join(GENERATED_DIR, filename)
 
-        with open(file_path, "wb") as f:
-            f.write(image_bytes)
+        result = cloudinary.uploader.upload(
+            image_bytes,
+            folder = "posters"
+        )
+        image_url = result.get("secure_url")
 
-        return filename
+        # with open(file_path, "wb") as f:
+        #     f.write(image_bytes)
+
+        return image_url
 
     except Exception as e:
         print("Image generation error:", e)
         raise
 # AI Poster Idea → Structured Fields
-async def generate_poster_fields(user_idea: str):
+def generate_poster_fields(user_idea: str):
 
     prompt = f"""
 You are a professional poster designer.

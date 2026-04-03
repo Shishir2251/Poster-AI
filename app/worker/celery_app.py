@@ -17,8 +17,8 @@ celery_app = Celery(
     backend=os.environ.get("CELERY_RESULT_BACKEND")
 )
 
-print("Celery broker URL:", os.environ.get("CELERY_BROKER_URL"))
-print("Celery result backend URL:", os.environ.get("CELERY_RESULT_BACKEND"))
+# print("Celery broker URL:", os.environ.get("CELERY_BROKER_URL"))
+# print("Celery result backend URL:", os.environ.get("CELERY_RESULT_BACKEND"))
 
 celery_app.conf.update(
     task_serializer='json',

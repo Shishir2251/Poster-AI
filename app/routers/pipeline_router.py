@@ -6,6 +6,8 @@ from app.services.ai_service import generate_poster
 from app.schemas import get_language_rules
 router = APIRouter()
 
+from app.worker.tasks import generate_poster_task, generate_poster_fields_task
+
 UPLOAD_DIR = "uploads"
 GENERATED_DIR = "generated"
 
@@ -105,32 +107,37 @@ async def generate_poster_complete(
     #  Dynamic base URL
     base_url = str(request.base_url).rstrip("/")
 
-    posters = []
+    tasks = []
 
     # STEP 4 — Generate Variations
     for i in range(variations):
 
         unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
 
-        poster_file = await generate_poster(
+        task = generate_poster_task.delay(
             unique_prompt,
             output_format,
-            uploaded_image_path,
-            # language
+            uploaded_image_path
         )
 
-        filename = os.path.basename(poster_file)
-
-        posters.append({
-            "poster_name": filename,
-            "view_url": f"{base_url}/generated/{filename}", # base url based on render server
-            "download_url": f"{base_url}/download/{filename}"
-        })
-
-    # STEP 5 — Return Response
-    return {
+        tasks.append(task.id)
+    
+    return{
         "status": "success",
-        "brand": brand_name,
-        "uploaded_image": uploaded_image_path,
-        "generated_posters": posters
+        "message": f"Poster generation started with {variations} variations. You can check the status of your posters using the task IDs.",
+        "task_ids": tasks
     }
+
+    #     posters.append({
+    #         "poster_name": filename,
+    #         "view_url": f"{base_url}/generated/{filename}", # base url based on render server
+    #         "download_url": f"{base_url}/download/{filename}"
+    #     })
+
+    # # STEP 5 — Return Response
+    # return {
+    #     "status": "success",
+    #     "brand": brand_name,
+    #     "uploaded_image": uploaded_image_path,
+    #     "generated_posters": posters
+    # }
