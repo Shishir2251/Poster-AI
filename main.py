@@ -17,7 +17,7 @@ app = FastAPI()
 def root():
     return {"message": "Poster AI API is running"}
 
-#endpoint to check celery task status
+#endpoint to call task and status
 @app.get("/test-celery")
 def test_celery():
     task = test_task.delay(5, 10)
@@ -27,7 +27,7 @@ def test_celery():
         # "result": task.result   # This will be None immediately after dispatch
     }
 
-#endpoint to check celery task result
+#endpoint to get celery test task result
 @app.get("/result/{job_id}")
 def get_result(job_id: str):
     task_result = AsyncResult(job_id, app=celery_app)
@@ -40,6 +40,28 @@ def get_result(job_id: str):
     
     return {
         "status": task_result.state
+    }
+
+
+@app.post("/generate_poster_/result/{job_id}")
+def get_poster_result(job_id:str):
+    try:
+        result = AsyncResult(job_id, app=celery_app)
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Error fetching task result" + str(e)
+        }
+
+    if result.state == "SUCCESS":
+        return {
+            "status": result.status,
+            "poster_url": result.result
+        }
+    
+    return{
+        "status": result.state
     }
 
     
