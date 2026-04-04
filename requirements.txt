@@ -8,7 +8,7 @@ langdetect
 arabic-reshaper
 python-dotenv
 numpy
-rembg[cpu]
+# rembg[cpu]
 onnxruntime
 celery
 redis

@@ -1,8 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, Form, Request
+from fastapi import APIRouter, UploadFile, File, Form
 import uuid
 import os
 from typing import Optional
-from app.services.ai_service import generate_poster
 from app.schemas import get_language_rules
 router = APIRouter()
 
@@ -17,7 +16,7 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 
 @router.post("/generate-poster-complete")
 async def generate_poster_complete(
-    request: Request,  # fix 1, importing the request
+    # request: Request,  # fix 1, importing the request
     title: str = Form(...),
     subtitle: str = Form(...),
     description: str = Form(...),
@@ -105,7 +104,7 @@ async def generate_poster_complete(
     """
 
     #  Dynamic base URL
-    base_url = str(request.base_url).rstrip("/")
+    # base_url = str(request.base_url).rstrip("/")
 
     tasks = []
 

@@ -1,8 +1,9 @@
 import os
-import uuid
+# import uuid
 import base64
 from openai import OpenAI
 from app.schemas import get_language_rules
+import cloudinary.uploader
 
 client = OpenAI()
 
@@ -10,7 +11,7 @@ GENERATED_DIR = "generated"
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
 
-async def generate_logo(data, image_path=None):
+def generate_logo(data, image_path=None):
 
     brand_name = data.get("brand_name")
     tagline = data.get("tagline", "")
@@ -82,14 +83,13 @@ Requirements:
 
             image_bytes = base64.b64decode(img.b64_json)
 
-            filename = f"logo_{uuid.uuid4().hex}.png"
+            upload_result = cloudinary.uploader.upload(
+                image_bytes,
+                folder="logos"
+            )
 
-            path = os.path.join(GENERATED_DIR, filename)
-
-            with open(path, "wb") as f:
-                f.write(image_bytes)
-
-            logos.append(f"/generated/{filename}")
+            img_url = upload_result.get("secure_url")
+            logos.append(img_url)
 
         return logos
 

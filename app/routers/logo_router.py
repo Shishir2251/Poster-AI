@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, Request
-from app.services.logo_service import generate_logo
+# from app.services.logo_service import generate_logo
+from app.worker.tasks import generate_logo_task
 import os
 from app.schemas import get_language_rules
 
@@ -7,7 +8,7 @@ router = APIRouter()
 
 @router.post("/generate-logo")
 async def generate_logo_api(
-    request: Request,  # fix 1
+    # request: Request,  # fix 1
     brand_name: str = Form(...),
     tagline: str = Form(None),
     vision: str = Form(None),
@@ -37,20 +38,23 @@ async def generate_logo_api(
         "language": language
     }
 
-    result = await generate_logo(data, image_path)
-
-    # fix 3- dynamic url
-    base_url = str(request.base_url).rstrip("/")
-
-    logos = []
-    for path in result:
-        filename = os.path.basename(path)
-        logos.append({
-            "view_url": f"{base_url}/generated/{filename}",
-            "download_url": f"{base_url}/download/{filename}"
-        })
+    task = generate_logo_task.delay(data, image_path)
 
     return {
-        "success": True,
-        "logos": logos
+        "status": "SUCCESS",
+        "message": "Logo generation started",
+        "task_id": task.id
     }
+
+    # logos = []
+    # for path in result:
+    #     filename = os.path.basename(path)
+    #     logos.append({
+    #         "view_url": f"{base_url}/generated/{filename}",
+    #         "download_url": f"{base_url}/download/{filename}"
+    #     })
+
+    # return {
+    #     "success": True,
+    #     "logos": logos
+    # }
