@@ -1,18 +1,16 @@
 import os
-import uuid
 import base64
 import random
 from openai import OpenAI
 from dotenv import load_dotenv
-from rembg import remove
+# from rembg import remove
 from PIL import Image
 import json
-from app.schemas import get_language_rules
-from rembg import new_session, remove
+# from rembg import new_session, remove
 from app.services.remove_bg import remove_bg_api
 import cloudinary.uploader
 
-session = new_session()  # load model ONLY once
+# session = new_session()  # load model ONLY once
 load_dotenv()
 
 # Initialize OpenAI client
@@ -37,28 +35,28 @@ def get_image_size(output_format: str):
 
     return size_map.get(output_format, "1024x1024")
 
-def remove_background(input_path):
+# def remove_background(input_path):
 
-    output_path = input_path.replace(".", "_no_bg.")
+#     output_path = input_path.replace(".", "_no_bg.")
 
-    try:
-        # verify image
-        with Image.open(input_path) as img:
-            img.verify()
+#     try:
+#         # verify image
+#         with Image.open(input_path) as img:
+#             img.verify()
 
-        with open(input_path, "rb") as i:
-            input_bytes = i.read()
+#         with open(input_path, "rb") as i:
+#             input_bytes = i.read()
 
-        output_bytes = remove(input_bytes, session=session) # rembg session for faster processing
+#         output_bytes = remove(input_bytes, session=session) # rembg session for faster processing
 
-        with open(output_path, "wb") as o:
-            o.write(output_bytes)
+#         with open(output_path, "wb") as o:
+#             o.write(output_bytes)
 
-        return output_path
+#         return output_path
 
-    except Exception as e:
-        print("Background removal failed:", e)
-        return input_path
+#     except Exception as e:
+#         print("Background removal failed:", e)
+#         return input_path
 
 
 # -----------------------------------------
@@ -73,7 +71,7 @@ def generate_poster(prompt, output_format="1:1", image_path=None):
 {prompt}
 
 IMPORTANT DESIGN RULES:
-- Use the uploaded image as the MAIN SUBJECT
+- Use the uploaded image if provided as the MAIN SUBJECT
 - Do NOT modify the product or object in the image
 - Only design poster layout around the image
 

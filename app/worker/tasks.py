@@ -2,6 +2,7 @@ from app.worker.celery_app import celery_app
 import time
 from app.services.ai_service import generate_poster, generate_poster_fields
 # import cloudinary.uploader
+from app.services.logo_service import generate_logo
 
 
 @celery_app.task
@@ -20,5 +21,11 @@ def generate_poster_fields_task(user_idea:str):
     return generate_poster_fields(user_idea)
 
 
+@celery_app.task
+def generate_logo_task(data, path):
+    return generate_logo(data, path)
 
+
+
+# celery -A app.worker.celery_app.celery_app worker --loglevel=info --pool=threads --concurrency=4
 

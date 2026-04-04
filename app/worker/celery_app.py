@@ -1,15 +1,9 @@
 from celery import Celery
-
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
 
-# celery_app = Celery(
-#     "worker",
-#     broker=os.getenv("REDIS_URL"),
-#     backend=os.getenv("REDIS_URL")
-# )
+load_dotenv()
 
 celery_app = Celery(
     "worker",

@@ -59,13 +59,36 @@ def get_poster_result(job_id:str):
             "status": result.status,
             "poster_url": result.result
         }
+    if result.state == "FAILURE":
+        return {
+        "status": "FAILURE",
+        "error": str(result.result)
+    }
     
     return{
         "status": result.state
     }
 
+@app.post("/generate_logo/result/{job_id}")
+def get_logo_result(job_id:str):
+    try:
+        result = AsyncResult(job_id, app=celery_app)
     
-
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Error fetching task result" + str(e)
+        }
+    
+    if result.state == "SUCCESS":
+        return {
+            "status": result.status,
+            "logo_urls": result.result
+        }
+    
+    return {
+        "status": result.state
+    }
 
     # if task_result.state == 'PENDING':
     #     return {"status": "Task is still pending..."}
