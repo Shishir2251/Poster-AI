@@ -11,6 +11,7 @@ from app.worker.celery_app import celery_app
 
 
 
+
 app = FastAPI()
 
 @app.get("/")
@@ -89,6 +90,24 @@ def get_logo_result(job_id:str):
     return {
         "status": result.state
     }
+
+@app.get("/poster_fields/result/{job_id}")
+def get_result(job_id: str):
+    task_result = AsyncResult(job_id, app=celery_app)
+
+    if task_result.state == "SUCCESS":
+        return {
+            "status": "completed",
+            "data": task_result.result
+        }
+
+    return {
+        "status": task_result.state
+    }
+
+
+
+
 
     # if task_result.state == 'PENDING':
     #     return {"status": "Task is still pending..."}
