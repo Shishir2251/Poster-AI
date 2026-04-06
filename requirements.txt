@@ -13,3 +13,4 @@ onnxruntime
 celery
 redis
 cloudinary
+requests
