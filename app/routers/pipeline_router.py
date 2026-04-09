@@ -18,16 +18,22 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 async def generate_poster_complete(
     # request: Request,  # fix 1, importing the request
     title: str = Form(...),
+    title_font: str = Form("Times new roman bold"),
     subtitle: str = Form(...),
-    description: str = Form(...),
+    subtitle_font: str = Form("monospace italic"),
+    tagline: str = Form("Your Tagline Here"),
+    # description: str = Form(...),
     brand_name: str = Form(...),
     primary_color: str = Form(...),
     secondary_color: str = Form(...),
-    cta: str = Form(...),
-    design_style_prompt: str = Form(...),
-    style_preset: str = Form(...),
-    output_format: str = Form(...),
-    language: str = Form("English"), # poster lanugae, default to english but can be set to other languages
+    cta: str = Form("Call to action button text"),
+    phone: str = Form(None),
+    address: str = Form(None),
+    website: str = Form(None),
+    design_style_prompt: str = Form("Make this poster look modern and minimalistic with a touch of vintage"),       
+    style_preset: str = Form("Modern Minimal"),
+    output_format: str = Form("1:1 square"),
+    language: str = Form("hebrew"), # poster lanugae, default to english but can be set to other languages
     variations: int = Form(1),
     image: Optional[UploadFile] = File(None)
 ):
@@ -46,62 +52,85 @@ async def generate_poster_complete(
     # STEP 2 — Brand Context
     brand_context = f"""
     Brand Name: {brand_name}
-    Primary Color: {primary_color}
-    Secondary Color: {secondary_color}
+    Tagline: {tagline}
+    color palatte: primary color {primary_color}, secondary color {secondary_color}
+    title font: {title_font}
+    subtitle font: {subtitle_font}
     """
 
     # STEP 3 — AI Prompt
     base_prompt = f"""
-    Create a professional marketing poster.
+You are a professional graphic designer creating high-quality marketing posters.
 
-    {language_rules}
+=====================
+LANGUAGE RULES
+=====================
+{language_rules}
 
-    IMPORTANT:
-    Use the provided image as the MAIN SUBJECT.
-    Do NOT modify the product or object inside the image.
+=====================
+BRAND IDENTITY (STRICT)
+=====================
+{brand_context}
 
-    Only add:
-    - typography
-    - layout
-    - branding elements
-    - background styling
+=====================
+CONTENT
+=====================
+Title: {title}
+Subtitle: {subtitle}
+Call To Action: {cta}
 
-    Aspect Ratio: {output_format}
+=====================
+CONTACT INFORMATION
+=====================
+Phone: {phone}
+Address: {address}
+Website: {website}
 
-    IMPORTANT DESIGN RULES:
-    - Keep all text inside safe margins
-    - Leave padding around edges
-    - Do not place text near borders
-    - Ensure title, subtitle and CTA are fully visible
+IMPORTANT:
+- The design MUST strictly follow the brand identity
+- Colors should be consistent with the brand palette
+- Typography and layout must feel aligned with the brand personality
+- Contact info should be clearly visible
+- Place near bottom or CTA
+- Do not clutter layout with contact details, but ensure they are easily found.
 
-    Layout Guide:
-    Top: Title
-    Below title: Subtitle
-    Center: Main visual or product
-    Bottom: Call to action
+=====================
+DESIGN DIRECTION
+=====================
+Style Prompt:
+{design_style_prompt}
 
-    Title: {title}
-    Subtitle: {subtitle}
-    Description: {description}
+Style Preset:
+{style_preset}
 
-    Brand: {brand_name}
+=====================
+LAYOUT RULES
+=====================
+- Top: Title
+- Below Title: Subtitle
+- Center: Main visual
+- Bottom: CTA
 
-    Call To Action: {cta}
+- Maintain safe margins
+- Avoid text near edges
+- Ensure strong visual hierarchy
 
-    Design Style Prompt:
-    {design_style_prompt}
+=====================
+IMAGE RULES
+=====================
+- Use the provided image as the MAIN SUBJECT
+- DO NOT modify the subject
+- Only enhance with background, typography, and layout
 
-    Brand Colors:
-    Primary: {primary_color}
-    Secondary: {secondary_color}
+=====================
+OUTPUT
+=====================
+Aspect Ratio: {output_format}
 
-    Output Format:{output_format}
+The final output should look like a premium, modern advertisement with clean layout and strong branding.
 
-    Style Preset:{style_preset}
-
-    The poster should look like a premium advertisement with modern layout,
-    balanced typography, and strong visual hierarchy.
-    """
+Creative variation number: {{variation_number}}
+"""
 
     #  Dynamic base URL
     # base_url = str(request.base_url).rstrip("/")
@@ -111,7 +140,8 @@ async def generate_poster_complete(
     # STEP 4 — Generate Variations
     for i in range(variations):
 
-        unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
+        # unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
+        unique_prompt = base_prompt.replace("{variation_number}", str(i+1))
 
         task = generate_poster_task.delay(
             unique_prompt,
