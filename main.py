@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 import os
+import ast
 
 from app.routers.pipeline_router import router as pipeline_router
 from app.routers.ai_helper_router import router as ai_helper_router
@@ -96,9 +98,11 @@ def get_result(job_id: str):
     task_result = AsyncResult(job_id, app=celery_app)
 
     if task_result.state == "SUCCESS":
+        cleaned = ast.literal_eval(task_result.result ) if isinstance(task_result.result, str) else task_result.result
+        
         return {
             "status": "completed",
-            "data": task_result.result
+            "data": cleaned
         }
 
     return {
