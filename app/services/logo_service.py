@@ -76,8 +76,10 @@ Requirements:
                 size="1024x1024",
                 n=1
             )
+            print("entire result ......:", result)
 
         logos = []
+    
 
         for img in result.data:
 
@@ -90,6 +92,7 @@ Requirements:
 
             img_url = upload_result.get("secure_url")
             logos.append(img_url)
+
 
         return logos
 

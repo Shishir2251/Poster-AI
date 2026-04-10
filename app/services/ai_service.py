@@ -141,38 +141,60 @@ Creative seed: {creative_seed}
     except Exception as e:
         print("Image generation error:", e)
         raise
+
+
+import re
+import ast
+
+def CleanData(text):
+    # Step 1: Remove all literal backslashes
+    cleaned = text.replace("\\", "")
+
+    # Step 2: Remove backticks (` or ``` )
+    cleaned = re.sub(r"`{1,3}", "", cleaned)
+
+    # Step 3: Remove code language keywords (json, bash, python, etc.)
+    cleaned = re.sub(r'\b(json|bash|python)\b', '', cleaned, flags=re.IGNORECASE)
+
+    # Step 4: Remove newlines and extra spaces
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    print(cleaned)
+    # cleaned = ast.literal_eval(cleaned)
+    return cleaned
+    
 # AI Poster Idea → Structured Fields
 def generate_poster_fields(user_idea: str):
 
     prompt = f"""
-You are a professional poster designer.
+        You are a professional poster designer.
 
-A user will describe a poster idea.
+        A user will describe a poster idea.
 
-Your task is to convert the idea into structured poster inputs.
+        Your task is to convert the idea into structured poster inputs.
 
-Return ONLY valid JSON with these fields:
+        Return ONLY valid JSON with these fields:
 
-title
-subtitle
-description
-cta
-design_style
-color_theme
-layout_hint
+        title
+        subtitle
+        description
+        cta
+        design_style
+        color_theme
+        layout_hint
 
-Rules:
-- title must be short and catchy
-- subtitle supports the title
-- description explains the offer/event
-- cta should be a short action phrase
-- design_style should describe the visual style
-- color_theme should be 2–3 colors
-- layout_hint should explain image/text placement
+        Rules:
+        - title must be short and catchy
+        - subtitle supports the title
+        - description explains the offer/event
+        - cta should be a short action phrase
+        - design_style should describe the visual style
+        - color_theme should be 2–3 colors
+        - layout_hint should explain image/text placement
 
-User Idea:
-{user_idea}
-"""
+        User Idea:
+        {user_idea}
+        """
 
     try:
 
@@ -186,14 +208,16 @@ User Idea:
         )
 
         content = response.choices[0].message.content
+        cleaned_content = CleanData(content)
 
         try:
-            return json.loads(content)
+            # return json.loads(cleaned_content)
+            return cleaned_content
 
         except json.JSONDecodeError:
             return {
                 "error": "AI returned non JSON output",
-                "raw_output": content
+                "raw_output": cleaned_content
             }
 
     except Exception as e:
