@@ -50,34 +50,47 @@ async def generate_poster_complete(
             buffer.write(await image.read())
 
     # STEP 2 — Brand Context
-    brand_context = f"""
-    Brand Name: {brand_name}
-    Tagline: {tagline}
-    color palatte: primary color {primary_color}, secondary color {secondary_color}
-    title font: {title_font}
-    subtitle font: {subtitle_font}
-    """
+    # brand_context = f"""
+    # Brand Name: {brand_name}
+    # Tagline: {tagline}
+    # color palatte: primary color {primary_color}, secondary color {secondary_color}
+    # title font: {title_font}
+    # subtitle font: {subtitle_font}
+    # """
 
     # STEP 3 — AI Prompt
     base_prompt = f"""
-You are a professional graphic designer creating high-quality marketing posters.
+You are a senior professional graphic designer specializing in high-impact marketing posters.
 
 =====================
-LANGUAGE RULES
+LANGUAGE RULES (CRITICAL — NEVER VIOLATE)
 =====================
 {language_rules}
 
 =====================
 BRAND IDENTITY (STRICT)
 =====================
-{brand_context}
+Brand Name: {brand_name}
+Tagline: {tagline}
+Primary Color: {primary_color}
+Secondary Color: {secondary_color}
+Title Font Style: {title_font}
+Subtitle Font Style: {subtitle_font}
+
+- ALL design decisions must reflect this brand identity
+- Colors must be consistent and intentional — no random colors
+- Typography must feel aligned with the brand personality
 
 =====================
-CONTENT
+CONTENT (RENDER EXACTLY AS GIVEN)
 =====================
 Title: {title}
 Subtitle: {subtitle}
 Call To Action: {cta}
+
+- Render every word EXACTLY as provided — do not paraphrase, shorten, or rewrite
+- Title must be the most visually dominant text element
+- CTA must look like a clickable button with contrast background
 
 =====================
 CONTACT INFORMATION
@@ -86,48 +99,60 @@ Phone: {phone}
 Address: {address}
 Website: {website}
 
-IMPORTANT:
-- The design MUST strictly follow the brand identity
-- Colors should be consistent with the brand palette
-- Typography and layout must feel aligned with the brand personality
-- Contact info should be clearly visible
-- Place near bottom or CTA
-- Do not clutter layout with contact details, but ensure they are easily found.
+- Place all contact info at the very bottom of the poster
+- Use small but legible font size
+- Do NOT omit any contact field
+- Do NOT clutter — keep it compact and clean
+- Website URL must be fully visible — never truncate or clip it
 
 =====================
 DESIGN DIRECTION
 =====================
-Style Prompt:
-{design_style_prompt}
-
-Style Preset:
-{style_preset}
+Style: {design_style_prompt}
+Preset: {style_preset}
 
 =====================
-LAYOUT RULES
+LAYOUT RULES (STRICT — ENFORCE PRECISELY)
 =====================
-- Top: Title
-- Below Title: Subtitle
-- Center: Main visual
-- Bottom: CTA
+SAFE ZONE:
+- Imagine a hard boundary 15% inward from ALL four edges
+- NO text, NO button, NO content of any kind may appear outside this safe zone
+- This applies to every corner and every edge — top, bottom, left, right
 
-- Maintain safe margins
-- Avoid text near edges
-- Ensure strong visual hierarchy
+TEXT WIDTH:
+- Title max width: 80% of canvas width
+- If title is long, reduce font size or break into 2 lines — NEVER overflow
+- Subtitle max width: 75% of canvas width
+- No single line of text should stretch beyond 80% of canvas width
+
+VERTICAL LAYOUT (top to bottom):
+1. Title — positioned in top section, fully inside safe zone
+2. Subtitle — directly below title, smaller font
+3. Main Visual / Product Image — center of canvas
+4. CTA Button — centered, at roughly 78% vertical position
+5. Contact Info — at roughly 90% vertical position, small font
+
+HIERARCHY:
+- Title > Subtitle > CTA > Contact Info (in terms of visual weight)
+- Strong contrast between text and background at every layer
 
 =====================
 IMAGE RULES
 =====================
-- Use the provided image as the MAIN SUBJECT
-- DO NOT modify the subject
-- Only enhance with background, typography, and layout
+- Use the provided image as the MAIN SUBJECT of the poster
+- DO NOT alter, modify, distort, or reimagine the product
+- Place it prominently in the center zone
+- Only add: background, lighting effects, shadows, decorative elements
+- The product must look exactly as uploaded — same shape, same color, same form
 
 =====================
-OUTPUT
+OUTPUT QUALITY
 =====================
 Aspect Ratio: {output_format}
-
-The final output should look like a premium, modern advertisement with clean layout and strong branding.
+- Final result must look like a premium, print-ready marketing poster
+- Clean layout, strong visual hierarchy, professional finish
+- No clutter, no overcrowding, no overflowing text
+- Every element must be fully visible and inside the canvas
 
 Creative variation number: {{variation_number}}
 """

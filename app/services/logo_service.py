@@ -76,7 +76,7 @@ Requirements:
                 size="1024x1024",
                 n=1
             )
-            print("entire result ......:", result)
+            print("--Total tokens for logo generation--",result.usage.total_tokens)
 
         logos = []
     

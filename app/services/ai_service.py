@@ -64,30 +64,30 @@ def get_image_size(output_format: str):
 # -----------------------------------------
 def generate_poster(prompt, output_format="1:1", image_path=None):
 
-    # ensure variation randomness
-    creative_seed = random.randint(1000, 999999)
+#     # ensure variation randomness
+#     creative_seed = random.randint(1000, 999999)
 
-    final_prompt = f"""
-{prompt}
+#     final_prompt = f"""
+# {prompt}
 
-IMPORTANT DESIGN RULES:
-- Use the uploaded image if provided as the MAIN SUBJECT
-- Do NOT modify the product or object in the image
-- Only design poster layout around the image
+# IMPORTANT DESIGN RULES:
+# - Use the uploaded image if provided as the MAIN SUBJECT
+# - Do NOT modify the product or object in the image
+# - Only design poster layout around the image
 
-TEXT RULES:
-- Title must be clearly visible
-- Subtitle must be readable
-- CTA button must be visible
+# TEXT RULES:
+# - Title must be clearly visible
+# - Subtitle must be readable
+# - CTA button must be visible
 
-LAYOUT RULES:
-- Keep all text inside safe margins
-- Maintain 10% padding from edges
-- Ensure title, subtitle and CTA are fully visible
-- Do not cut text near borders
+# LAYOUT RULES:
+# - Keep all text inside safe margins
+# - Maintain 10% padding from edges
+# - Ensure title, subtitle and CTA are fully visible
+# - Do not cut text near borders
 
-Creative seed: {creative_seed}
-"""
+# Creative seed: {creative_seed}
+# """
 
     size = get_image_size(output_format)
 
@@ -105,7 +105,7 @@ Creative seed: {creative_seed}
 
                 result = client.images.edit(
                     model="gpt-image-1",
-                    prompt=final_prompt,
+                    prompt=prompt,
                     size=size,
                     image=img
                 )
@@ -117,9 +117,10 @@ Creative seed: {creative_seed}
 
             result = client.images.generate(
                 model="gpt-image-1",
-                prompt=final_prompt,
+                prompt=prompt,
                 size=size
             )
+            print("--Total tokens for poster generation--",result.usage.total_tokens)
 
         image_base64 = result.data[0].b64_json
         image_bytes = base64.b64decode(image_base64)
