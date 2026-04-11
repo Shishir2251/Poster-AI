@@ -1,29 +1,29 @@
 import os
 import base64
-import random
+import re
+# import random
 from openai import OpenAI
 from dotenv import load_dotenv
 # from rembg import remove
-from PIL import Image
+# from PIL import Image
 import json
 # from rembg import new_session, remove
 from app.services.remove_bg import remove_bg_api
 import cloudinary.uploader
+import requests
+import base64
+from io import BytesIO
+import cloudinary.uploader
 
-# session = new_session()  # load model ONLY once
 load_dotenv()
 
-# Initialize OpenAI client
+
 client = OpenAI()
 
 GENERATED_DIR = "generated"
 os.makedirs(GENERATED_DIR, exist_ok=True)
 
 
-
-# -----------------------------------------
-# Get Image Size Based on Aspect Ratio
-# -----------------------------------------
 def get_image_size(output_format: str):
 
     size_map = {
@@ -35,67 +35,14 @@ def get_image_size(output_format: str):
 
     return size_map.get(output_format, "1024x1024")
 
-# def remove_background(input_path):
-
-#     output_path = input_path.replace(".", "_no_bg.")
-
-#     try:
-#         # verify image
-#         with Image.open(input_path) as img:
-#             img.verify()
-
-#         with open(input_path, "rb") as i:
-#             input_bytes = i.read()
-
-#         output_bytes = remove(input_bytes, session=session) # rembg session for faster processing
-
-#         with open(output_path, "wb") as o:
-#             o.write(output_bytes)
-
-#         return output_path
-
-#     except Exception as e:
-#         print("Background removal failed:", e)
-#         return input_path
 
 
-# -----------------------------------------
-# Poster Generator
-# -----------------------------------------
 def generate_poster(prompt, output_format="1:1", image_path=None):
-
-#     # ensure variation randomness
-#     creative_seed = random.randint(1000, 999999)
-
-#     final_prompt = f"""
-# {prompt}
-
-# IMPORTANT DESIGN RULES:
-# - Use the uploaded image if provided as the MAIN SUBJECT
-# - Do NOT modify the product or object in the image
-# - Only design poster layout around the image
-
-# TEXT RULES:
-# - Title must be clearly visible
-# - Subtitle must be readable
-# - CTA button must be visible
-
-# LAYOUT RULES:
-# - Keep all text inside safe margins
-# - Maintain 10% padding from edges
-# - Ensure title, subtitle and CTA are fully visible
-# - Do not cut text near borders
-
-# Creative seed: {creative_seed}
-# """
 
     size = get_image_size(output_format)
 
     try:
 
-        # -----------------------------
-        # If user uploaded an image
-        # -----------------------------
         if image_path and os.path.exists(image_path):
 
             # image_path = remove_background(image_path)
@@ -110,9 +57,7 @@ def generate_poster(prompt, output_format="1:1", image_path=None):
                     image=img
                 )
 
-        # -----------------------------
-        # No image provided
-        # -----------------------------
+      
         else:
 
             result = client.images.generate(
@@ -125,17 +70,12 @@ def generate_poster(prompt, output_format="1:1", image_path=None):
         image_base64 = result.data[0].b64_json
         image_bytes = base64.b64decode(image_base64)
 
-        # filename = f"poster_{uuid.uuid4().hex}.png"
-        # file_path = os.path.join(GENERATED_DIR, filename)
-
         result = cloudinary.uploader.upload(
             image_bytes,
             folder = "posters"
         )
         image_url = result.get("secure_url")
 
-        # with open(file_path, "wb") as f:
-        #     f.write(image_bytes)
 
         return image_url
 
@@ -144,8 +84,66 @@ def generate_poster(prompt, output_format="1:1", image_path=None):
         raise
 
 
-import re
-import ast
+
+
+def regenerate_poster(prompt, output_format, image_url=None):
+
+    img_size = get_image_size(output_format)
+
+    try:
+
+        # STEP 1 — load image (from URL)
+        image_file = None
+
+        if image_url:
+
+            try:
+                response = requests.get(image_url, timeout=(3, 10))
+                response.raise_for_status()
+
+                image_file = BytesIO(response.content)
+                image_file.name = "image.png"
+
+            except Exception as e:
+                print("Image download failed:", e)
+                raise
+
+        # STEP 2 — OpenAI generation
+        if image_file:
+
+            response = client.images.edit(
+                model="gpt-image-1",
+                prompt=prompt,
+                size=img_size,
+                image=image_file
+            )
+
+        else:
+
+            response = client.images.generate(
+                model="gpt-image-1",
+                prompt=prompt,
+                size=img_size
+            )
+
+        # STEP 3 — decode result
+        image_base64 = response.data[0].b64_json
+        result_image_bytes = base64.b64decode(image_base64)
+
+        # STEP 4 — upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            result_image_bytes,
+            folder="re_generated_posters"
+        )
+
+        return upload_result["secure_url"]
+
+    except Exception as e:
+        print("Image regeneration failed:", e)
+        raise
+
+
+
 
 def CleanData(text):
     # Step 1: Remove all literal backslashes

@@ -7,6 +7,7 @@ import ast
 from app.routers.pipeline_router import router as pipeline_router
 from app.routers.ai_helper_router import router as ai_helper_router
 from app.routers.logo_router import router as logo_router
+from app.routers.re_generation_router import router as regeneration_router
 from app.worker.tasks import test_task
 from celery.result import AsyncResult
 from app.worker.celery_app import celery_app
@@ -72,6 +73,33 @@ def get_poster_result(job_id:str):
         "status": result.state
     }
 
+@app.post("/regenerate_poster/{job_id}")
+def get_poster_result(job_id:str):
+    try:
+        result = AsyncResult(job_id, app=celery_app)
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Error fetching task result" + str(e)
+        }
+
+    if result.state == "SUCCESS":
+        return {
+            "status": result.status,
+            "poster_url": result.result
+        }
+    if result.state == "FAILURE":
+        return {
+        "status": "FAILURE",
+        "error": str(result.result)
+    }
+    
+    return{
+        "status": result.state
+    }
+
+
 @app.post("/generate_logo/result/{job_id}")
 def get_logo_result(job_id:str):
     try:
@@ -113,6 +141,7 @@ def get_result(job_id: str):
 
 
 
+
     # if task_result.state == 'PENDING':
     #     return {"status": "Task is still pending..."}
     # elif task_result.state == 'SUCCESS':
@@ -137,3 +166,4 @@ app.mount("/uploads", StaticFiles(directory=uploads_path), name="uploads")
 app.include_router(pipeline_router)
 app.include_router(ai_helper_router, tags=["AI Content Assistant"])
 app.include_router(logo_router, tags=["Logo Generator"])
+app.include_router(regeneration_router, tags=["poster Regeneration router"])
