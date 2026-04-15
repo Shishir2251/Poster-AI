@@ -14,6 +14,7 @@ import requests
 import base64
 from io import BytesIO
 import cloudinary.uploader
+from .text_renderer import render_poster_text
 
 load_dotenv()
 
@@ -37,7 +38,7 @@ def get_image_size(output_format: str):
 
 
 
-def generate_poster(prompt, output_format="1:1", image_path=None):
+def generate_poster(prompt,content, output_format="1:1", image_path=None):
 
     size = get_image_size(output_format)
 
@@ -70,12 +71,16 @@ def generate_poster(prompt, output_format="1:1", image_path=None):
         image_base64 = result.data[0].b64_json
         image_bytes = base64.b64decode(image_base64)
 
+        final_image_bytes = render_poster_text(
+            image_bytes=image_bytes,
+            content=content
+        )
+
         result = cloudinary.uploader.upload(
-            image_bytes,
+            final_image_bytes,
             folder = "posters"
         )
         image_url = result.get("secure_url")
-
 
         return image_url
 
@@ -85,62 +90,128 @@ def generate_poster(prompt, output_format="1:1", image_path=None):
 
 
 
-
 def regenerate_poster(prompt, output_format, image_url=None):
-
     img_size = get_image_size(output_format)
 
     try:
+        final_prompt = prompt
 
-        # STEP 1 — load image (from URL)
-        image_file = None
-
+        # STEP 1 — If original poster exists, describe it first
         if image_url:
-
-            try:
-                response = requests.get(image_url, timeout=(3, 10))
-                response.raise_for_status()
-
-                image_file = BytesIO(response.content)
-                image_file.name = "image.png"
-
-            except Exception as e:
-                print("Image download failed:", e)
-                raise
-
-        # STEP 2 — OpenAI generation
-        if image_file:
-
-            response = client.images.edit(
-                model="gpt-image-1",
-                prompt=prompt,
-                size=img_size,
-                image=image_file
+            vision_response = client.chat.completions.create(
+                model="gpt-4.1",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": image_url}
+                            },
+                            {
+                                "type": "text",
+                                "text": """Describe this marketing poster in detail:
+- Layout and composition
+- Background style and colors
+- All text content, fonts, sizes, colors
+- Position of every element
+- CTA button style
+- Overall visual mood"""
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=800
             )
 
-        else:
+            poster_description = vision_response.choices[0].message.content
 
-            response = client.images.generate(
-                model="gpt-image-1",
-                prompt=prompt,
-                size=img_size
-            )
+            # STEP 2 — Inject description into prompt
+            final_prompt = f"""
+{prompt}
 
-        # STEP 3 — decode result
-        image_base64 = response.data[0].b64_json
-        result_image_bytes = base64.b64decode(image_base64)
+=====================
+ORIGINAL POSTER VISUAL REFERENCE
+=====================
+{poster_description}
 
-        # STEP 4 — upload to Cloudinary
-        upload_result = cloudinary.uploader.upload(
-            result_image_bytes,
-            folder="re_generated_posters"
+CRITICAL:
+- Preserve everything above UNLESS explicitly overridden in USER REQUESTED CHANGES
+- Only change what has a new value — keep everything else identical
+"""
+
+        # STEP 3 — Generate
+        response = client.images.generate(
+            model="gpt-image-1",
+            prompt=final_prompt,
+            size=img_size
         )
 
+        image_bytes = base64.b64decode(response.data[0].b64_json)
+        upload_result = cloudinary.uploader.upload(image_bytes, folder="re_generated_posters")
         return upload_result["secure_url"]
 
     except Exception as e:
-        print("Image regeneration failed:", e)
+        print("Regeneration failed:", e)
         raise
+
+
+
+# def regenerate_poster(prompt, output_format, image_url=None):
+
+#     img_size = get_image_size(output_format)
+
+#     try:
+
+#         # STEP 1 — load image (from URL)
+#         image_file = None
+
+#         if image_url:
+
+#             try:
+#                 response = requests.get(image_url, timeout=(3, 10))
+#                 response.raise_for_status()
+
+#                 image_file = BytesIO(response.content)
+#                 image_file.name = "image.png"
+
+#             except Exception as e:
+#                 print("Image download failed:", e)
+#                 raise
+
+#         # STEP 2 — OpenAI generation
+#         if image_file:
+
+#             response = client.images.edit(
+#                 model="gpt-image-1",
+#                 prompt=prompt,
+#                 size=img_size,
+#                 image=image_file
+#             )
+
+#         else:
+
+#             response = client.images.generate(
+#                 model="gpt-image-1",
+#                 prompt=prompt,
+#                 size=img_size
+#             )
+
+#         # STEP 3 — decode result
+#         image_base64 = response.data[0].b64_json
+#         result_image_bytes = base64.b64decode(image_base64)
+
+#         # STEP 4 — upload to Cloudinary
+#         upload_result = cloudinary.uploader.upload(
+#             result_image_bytes,
+#             folder="re_generated_posters"
+#         )
+
+#         return upload_result["secure_url"]
+
+#     except Exception as e:
+#         print("Image regeneration failed:", e)
+#         raise
 
 
 

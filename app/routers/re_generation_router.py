@@ -52,13 +52,12 @@ You are a senior professional graphic designer specializing in high-impact marke
 =====================
 REGENERATION MODE (IMPORTANT)
 =====================
-- You are editing an EXISTING poster
-- Apply ONLY requested changes
-- Preserve layout, spacing, and hierarchy
-- Keep visual consistency unless change is required
+- Recreate the poster from scratch while closely matching the original layout and composition
+- Treat the provided image (if any) as a visual reference, not something to lightly modify
+- Maintain overall visual consistency unless changes are explicitly requested
 
 =====================
-LANGUAGE RULES
+LANGUAGE RULES (CRITICAL — NEVER VIOLATE)
 =====================
 {language_rules}
 
@@ -70,49 +69,88 @@ ORIGINAL CONTEXT
 =====================
 USER REQUESTED CHANGES
 =====================
-Title: {title}
-Subtitle: {subtitle}
-Tagline: {tagline}
-Brand Name: {brand_name}
+Title: {title if title else "UNCHANGED"}
+Subtitle: {subtitle if subtitle else "UNCHANGED"}
+Tagline: {tagline if tagline else "UNCHANGED"}
+Brand Name: {brand_name if brand_name else "UNCHANGED"}
 
-CTA: {cta}
-Phone: {phone}
-Address: {address}
-Website: {website}
+CTA: {cta if cta else "UNCHANGED"}
+Phone: {phone if phone else "UNCHANGED"}
+Address: {address if address else "UNCHANGED"}
+Website: {website if website else "UNCHANGED"}
 
-Title Font: {title_font}
-Subtitle Font: {subtitle_font}
+Title Font Style: {title_font if title_font else "UNCHANGED"}
+Subtitle Font Style: {subtitle_font if subtitle_font else "UNCHANGED"}
 
-Primary Color: {primary_color}
-Secondary Color: {secondary_color}
+Primary Color: {primary_color if primary_color else "UNCHANGED"}
+Secondary Color: {secondary_color if secondary_color else "UNCHANGED"}
 
-Style Direction: {design_style_prompt}
-Style Preset: {style_preset}
+Style Direction: {design_style_prompt if design_style_prompt else "UNCHANGED"}
+Style Preset: {style_preset if style_preset else "UNCHANGED"}
 
 =====================
-RULES
+UNCHANGED FIELD RULES (CRITICAL)
 =====================
-- If a field is NULL → keep original unchanged
-- Modify ONLY provided fields
-- Do NOT redesign entire poster unless necessary
-- Maintain professional layout and spacing
+- Any field marked as "UNCHANGED" must remain EXACTLY the same as in the original design
+- Do NOT rewrite, rephrase, reposition, or restyle unchanged fields
+- Preserve the exact text, placement, size, and visual appearance of unchanged elements
+- Only modify fields that contain new values
+
+=====================
+TEXT ACCURACY RULES (CRITICAL)
+=====================
+- Use EXACT text provided in each field
+- Do NOT rephrase, translate, or modify wording
+- Do NOT add extra words
+- Preserve capitalization exactly
+- Ensure all text is clearly readable and not distorted
+
+=====================
+LAYOUT CONSISTENCY
+=====================
+- Maintain similar positioning of elements (top, center, bottom)
+- Keep hierarchy:
+  Title = largest and most prominent  
+  Subtitle = secondary  
+  Tagline / body = smaller  
+  CTA = clear and visible  
+- Preserve alignment style (centered, left, or right aligned)
+- Keep spacing, margins, and padding balanced
+
+=====================
+STYLE & COLOR CONTROL
+=====================
+- If colors are provided → apply them consistently across the design
+- If font styles are provided → match similar visual style (do not require exact font match)
+- Maintain strong contrast and readability
 
 =====================
 IMAGE RULES
 =====================
-- The provided image_url is the BASE poster
-- Apply edits on top of it
-- If no image_url → generate fresh variation
+- If image_url is provided:
+  - Use it as the base visual reference
+  - Match layout, structure, and composition closely
+  - Do NOT ignore the reference image
+- If no image_url:
+  - Generate a new high-quality poster based on context
 
 =====================
-OUTPUT
+VARIATION CONTROL
 =====================
-- High-quality marketing poster
-- Clean typography
-- Strong hierarchy
-- No overflow
+- This is variation #{'{variation_number}'}
+- Keep content identical across variations
+- Introduce subtle differences in layout, typography, or visual balance
+- Do NOT drastically change the design concept
 
-Creative variation number: {{variation_number}}
+=====================
+OUTPUT REQUIREMENTS
+=====================
+Aspect Ratio: {output_format}
+- High-quality, professional marketing poster
+- Clean typography and strong hierarchy
+- Ensure all text fits within boundaries
+- No overflow, clipping, or cutoff
+- Visually balanced and aesthetically polished
 """
 
     # STEP 2 — TASK CREATION

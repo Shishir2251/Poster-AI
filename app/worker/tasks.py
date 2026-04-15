@@ -13,8 +13,8 @@ def test_task(x, y):
     return x + y
 
 @celery_app.task
-def generate_poster_task(prompt, output_format = "1:1", image_path=None):
-    return generate_poster(prompt, output_format, image_path)
+def generate_poster_task(prompt,content, output_format = "1:1", image_path=None):
+    return generate_poster(prompt, content, output_format, image_path)
 
 
 @celery_app.task

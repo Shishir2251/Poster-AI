@@ -140,17 +140,6 @@ def get_result(job_id: str):
 
 
 
-
-
-    # if task_result.state == 'PENDING':
-    #     return {"status": "Task is still pending..."}
-    # elif task_result.state == 'SUCCESS':
-    #     return {"status": "Task completed!", "result": task_result.result}
-    # else:
-    #     return {"status": f"Task is in state: {task_result.state}"}
-
-
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 generated_path = os.path.join(BASE_DIR, "generated")
