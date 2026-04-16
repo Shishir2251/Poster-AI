@@ -6,6 +6,7 @@ from app.schemas import get_language_rules
 router = APIRouter()
 
 from app.worker.tasks import generate_poster_task
+from app.schemas import TEXT_PLACEHOLDER_RULES, HIERARCHY_RULES
 
 UPLOAD_DIR = "uploads"
 GENERATED_DIR = "generated"
@@ -48,54 +49,51 @@ async def generate_poster_complete(
 
         with open(uploaded_image_path, "wb") as buffer:
             buffer.write(await image.read())
+    
+    
 
 
-    # STEP 3 — AI Prompt
+    tasks = []
+    content = {
+    "title": title,
+    "subtitle": subtitle,
+    "cta": cta,
+    "brand_name": brand_name,
+    "tagline": tagline,
+    "phone": phone or "",
+    "address": address or "",
+    "website": website or ""
+}
     base_prompt = f"""
-You are a senior professional graphic designer specializing in high-impact marketing posters.
+You are a senior professional graphic designer specializing
+in high-impact marketing posters.
 
 =====================
-LANGUAGE RULES (CRITICAL — NEVER VIOLATE)
+CRITICAL: BACKGROUND TEMPLATE ONLY
 =====================
-{language_rules}
+You are generating a POSTER BACKGROUND only.
+A separate text rendering system will add ALL text afterward.
+DO NOT render any text, characters, numbers, or letters anywhere.
+No placeholder bars, no wireframe boxes, no mockup shapes.
+Think of it as a billboard before the text is printed on it.
 
 =====================
 BRAND IDENTITY (STRICT)
 =====================
-Brand Name: {brand_name}
-Tagline: {tagline}
-Primary Color: {primary_color}
-Secondary Color: {secondary_color}
+Brand color palette: {primary_color} and {secondary_color}
 Title Font Style: {title_font}
 Subtitle Font Style: {subtitle_font}
 
 - ALL design decisions must reflect this brand identity
-- Colors must be consistent and intentional — no random colors
-- Typography must feel aligned with the brand personality
+- Colors must be consistent and intentional
+- Typography must feel aligned with brand personality
 
 =====================
-CONTENT (RENDER EXACTLY AS GIVEN)
+CONTACT INFORMATION ZONE
 =====================
-Title: {title}
-Subtitle: {subtitle}
-Call To Action: {cta}
-
-- Render every word EXACTLY as provided — do not paraphrase, shorten, or rewrite
-- Title must be the most visually dominant text element
-- CTA must look like a clickable button with contrast background
-
-=====================
-CONTACT INFORMATION
-=====================
-Phone: {phone}
-Address: {address}
-Website: {website}
-
-- Place all contact info at the very bottom of the poster
-- Use small but legible font size
-- Do NOT omit any contact field
-- Do NOT clutter — keep it compact and clean
-- Website URL must be fully visible — never truncate or clip it
+- Reserve a clean footer area for contact information
+- DO NOT draw any text, lines, or placeholder shapes
+- Just leave clean flat background in the footer area
 
 =====================
 DESIGN DIRECTION
@@ -104,62 +102,48 @@ Style: {design_style_prompt}
 Preset: {style_preset}
 
 =====================
-LAYOUT RULES (STRICT — ENFORCE PRECISELY)
+LAYOUT RULES (STRICT)
 =====================
 SAFE ZONE:
-- Imagine a hard boundary 15% inward from ALL four edges
-- NO text, NO button, NO content of any kind may appear outside this safe zone
-- This applies to every corner and every edge — top, bottom, left, right
+- Hard boundary 15% inward from ALL four edges
+- NO content outside this safe zone
 
-TEXT WIDTH:
-- Title max width: 80% of canvas width
-- If title is long, reduce font size or break into 2 lines — NEVER overflow
-- Subtitle max width: 75% of canvas width
-- No single line of text should stretch beyond 80% of canvas width
-
-VERTICAL LAYOUT (top to bottom):
-1. Title — positioned in top section, fully inside safe zone
-2. Subtitle — directly below title, smaller font
-3. Main Visual / Product Image — center of canvas
-4. CTA Button — centered, at roughly 78% vertical position
-5. Contact Info — at roughly 90% vertical position, small font
-
-HIERARCHY:
-- Title > Subtitle > CTA > Contact Info (in terms of visual weight)
-- Strong contrast between text and background at every layer
+VERTICAL ORDER (top to bottom):
+1. TOP ZONE (0% to 28%)   — completely clean {primary_color} background, nothing here
+2. CENTER ZONE (28% to 68%) — main hero visual/product ONLY, strictly within this zone
+3. CTA ZONE (74% to 82%)  — one empty rounded pill button shape, filled with {secondary_color}, nothing inside
+4. BOTTOM ZONE (82% to 100%) — clean flat background, completely empty
 
 =====================
 IMAGE RULES
 =====================
-- Use the provided image as the MAIN SUBJECT of the poster
-- DO NOT alter, modify, distort, or reimagine the product
-- Place it prominently in the center zone
-- Only add: background, lighting effects, shadows, decorative elements
-- The product must look exactly as uploaded — same shape, same color, same form
+- Use the provided image as the MAIN SUBJECT
+- Do NOT alter, distort, or reimagine the product
+- Place it strictly within CENTER ZONE (28% to 68%) only
+- Scale the product down if needed to fit within this zone
+- Only add: background, lighting, shadows, decorative elements
+- Product must look exactly as uploaded
 
 =====================
 OUTPUT QUALITY
 =====================
 Aspect Ratio: {output_format}
-- Final result must look like a premium, print-ready marketing poster
+- Premium, print-ready marketing poster
 - Clean layout, strong visual hierarchy, professional finish
-- No clutter, no overcrowding, no overflowing text
-- Every element must be fully visible and inside the canvas
+- No clutter, no overflowing text
+- Every element fully visible inside the canvas
 
 Creative variation number: {{variation_number}}
 """
 
-
-    tasks = []
-
     # STEP 4 — Generate Variations
     for i in range(variations):
-
         # unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
         unique_prompt = base_prompt.replace("{variation_number}", str(i+1))
 
         task = generate_poster_task.delay(
             unique_prompt,
+            content,
             output_format,
             uploaded_image_path
         )

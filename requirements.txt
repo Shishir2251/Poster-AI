@@ -14,3 +14,4 @@ celery
 redis
 cloudinary
 requests
+python-bidi
