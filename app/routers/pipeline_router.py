@@ -6,7 +6,6 @@ from app.schemas import get_language_rules
 router = APIRouter()
 
 from app.worker.tasks import generate_poster_task
-from app.schemas import TEXT_PLACEHOLDER_RULES, HIERARCHY_RULES
 
 UPLOAD_DIR = "uploads"
 GENERATED_DIR = "generated"
@@ -17,13 +16,11 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 
 @router.post("/generate-poster-complete")
 async def generate_poster_complete(
-    # request: Request,  # fix 1, importing the request
     title: str = Form(...),
     title_font: str = Form("Times new roman bold"),
     subtitle: str = Form(...),
     subtitle_font: str = Form("monospace italic"),
     tagline: str = Form("Your Tagline Here"),
-    # description: str = Form(...),
     brand_name: str = Form(...),
     primary_color: str = Form(...),
     secondary_color: str = Form(...),
@@ -31,127 +28,150 @@ async def generate_poster_complete(
     phone: str = Form(None),
     address: str = Form(None),
     website: str = Form(None),
-    design_style_prompt: str = Form("Make this poster look modern and minimalistic with a touch of vintage"),       
+    design_style_prompt: str = Form("Make this poster look modern and minimalistic with a touch of vintage"),
     style_preset: str = Form("Modern Minimal"),
     output_format: str = Form("1:1 square"),
-    language: str = Form("hebrew"), # poster lanugae, default to english but can be set to other languages
+    language: str = Form("hebrew"),
     variations: int = Form(1),
     image: Optional[UploadFile] = File(None)
 ):
-    language_rules = get_language_rules(language)
     uploaded_image_path = None
 
-    # STEP 1 — Upload Image
     if image:
         ext = image.filename.split(".")[-1]
         image_name = f"{uuid.uuid4()}.{ext}"
         uploaded_image_path = f"{UPLOAD_DIR}/{image_name}"
-
         with open(uploaded_image_path, "wb") as buffer:
             buffer.write(await image.read())
-    
-    
 
-
-    tasks = []
     content = {
-    "title": title,
-    "subtitle": subtitle,
-    "cta": cta,
-    "brand_name": brand_name,
-    "tagline": tagline,
-    "phone": phone or "",
-    "address": address or "",
-    "website": website or ""
-}
+        "title": title,
+        "subtitle": subtitle,
+        "cta": cta,
+        "brand_name": brand_name,
+        "tagline": tagline,
+        "phone": phone or "",
+        "address": address or "",
+        "website": website or ""
+    }
+
     base_prompt = f"""
 You are a senior professional graphic designer specializing
 in high-impact marketing posters.
 
 =====================
-CRITICAL: BACKGROUND TEMPLATE ONLY
+CRITICAL: THIS IS A POSTER BACKGROUND ONLY
 =====================
-You are generating a POSTER BACKGROUND only.
-A separate text rendering system will add ALL text afterward.
-DO NOT render any text, characters, numbers, or letters anywhere.
-No placeholder bars, no wireframe boxes, no mockup shapes.
-Think of it as a billboard before the text is printed on it.
+You are generating ONLY the visual background layer of a poster.
+A separate professional text rendering system will add ALL text afterward.
+
+ABSOLUTE TEXT RULE — ZERO TOLERANCE:
+- Do NOT render any text, letters, numbers, or characters anywhere
+- Do NOT draw placeholder bars, boxes, lines, or wireframe shapes
+- Do NOT add watermarks, decorative scripts, or any readable marks
+
+=====================
+POSTER CONTEXT (FOR VISUAL DIRECTION ONLY — DO NOT DRAW)
+=====================
+This poster is for: {brand_name}
+The poster promotes: {title}
+Additional context: {subtitle}
+
+Use this information ONLY to decide:
+- What kind of imagery, props, or environment fits the business
+- What mood and atmosphere the poster should convey
+- What decorative elements make sense (e.g. pizza ingredients, herbs,
+  flour dust for a pizza brand — NOT the actual text)
+
+DO NOT render any of these words as text in the image.
+
+=====================
+INPUT LANGUAGE
+=====================
+All input fields may be provided in Hebrew or English.
+You must understand and interpret both languages correctly.
+If input is in Hebrew, treat it as Hebrew context.
+If input is in English, treat it as English context.
+Do NOT translate — just use the meaning to guide your visual design decisions.
 
 =====================
 BRAND IDENTITY (STRICT)
 =====================
-Brand color palette: {primary_color} and {secondary_color}
+Primary Color: {primary_color}
+Secondary Color: {secondary_color}
 Title Font Style: {title_font}
 Subtitle Font Style: {subtitle_font}
 
-- ALL design decisions must reflect this brand identity
-- Colors must be consistent and intentional
-- Typography must feel aligned with brand personality
+- Use {primary_color} as the dominant background color
+- Use {secondary_color} only as subtle accent color in the design
+- Do NOT create any button, badge, or UI element
 
 =====================
-CONTACT INFORMATION ZONE
+DESIGN DIRECTION (HIGH PRIORITY)
 =====================
-- Reserve a clean footer area for contact information
-- DO NOT draw any text, lines, or placeholder shapes
-- Just leave clean flat background in the footer area
-
-=====================
-DESIGN DIRECTION
-=====================
-Style: {design_style_prompt}
+Style instruction: {design_style_prompt}
 Preset: {style_preset}
 
-=====================
-LAYOUT RULES (STRICT)
-=====================
-SAFE ZONE:
-- Hard boundary 15% inward from ALL four edges
-- NO content outside this safe zone
+This style instruction is a HIGH PRIORITY creative directive.
+Every visual decision — color treatment, lighting, texture, composition,
+decorative elements, mood, and atmosphere — must strongly reflect this style.
+If the style says "luxury", the poster must feel expensive and premium.
+If the style says "vintage", use warm tones, textures, and retro aesthetics.
+If the style says "minimalist", keep backgrounds clean with minimal decoration.
+The style instruction overrides generic design choices — treat it as law.
 
-VERTICAL ORDER (top to bottom):
-1. TOP ZONE (0% to 28%)   — completely clean {primary_color} background, nothing here
-2. CENTER ZONE (28% to 68%) — main hero visual/product ONLY, strictly within this zone
-3. CTA ZONE (74% to 82%)  — one empty rounded pill button shape, filled with {secondary_color}, nothing inside
-4. BOTTOM ZONE (82% to 100%) — clean flat background, completely empty
+=====================
+CANVAS LAYOUT ZONES (STRICT)
+=====================
+
+ZONE 1 — TOP TEXT AREA (0% to 28%):
+- Completely EMPTY — flat {primary_color} background only
+- No elements, no decorations, no shadows here
+- Must have strong contrast to support text overlay
+
+ZONE 2 — HERO VISUAL (28% to 75%):
+- Place the main visual subject HERE ONLY
+- Must NOT extend above 28% or below 75%
+- Scale down if needed to fit strictly within this zone
+- Add background, lighting, shadows, decorative elements here
+
+ZONE 3 — LOWER AREA (75% to 100%):
+- Completely EMPTY — flat {primary_color} background only
+- No elements, no decorations whatsoever
+- This area is reserved for text and CTA rendering later
 
 =====================
 IMAGE RULES
 =====================
-- Use the provided image as the MAIN SUBJECT
-- Do NOT alter, distort, or reimagine the product
-- Place it strictly within CENTER ZONE (28% to 68%) only
-- Scale the product down if needed to fit within this zone
+- If a product image is provided, use it as the MAIN SUBJECT in ZONE 2
+- If no image is provided, generate a high quality, photorealistic
+  visual that fits the brand context in ZONE 2
 - Only add: background, lighting, shadows, decorative elements
-- Product must look exactly as uploaded
+- Do NOT alter or reimagine any provided product image
 
 =====================
 OUTPUT QUALITY
 =====================
 Aspect Ratio: {output_format}
 - Premium, print-ready marketing poster
-- Clean layout, strong visual hierarchy, professional finish
-- No clutter, no overflowing text
 - Every element fully visible inside the canvas
 
 Creative variation number: {{variation_number}}
 """
 
-    # STEP 4 — Generate Variations
+    tasks = []
     for i in range(variations):
-        # unique_prompt = base_prompt + f"\nCreative variation number {i+1}"
-        unique_prompt = base_prompt.replace("{variation_number}", str(i+1))
-
+        unique_prompt = base_prompt.replace("{variation_number}", str(i + 1))
         task = generate_poster_task.delay(
             unique_prompt,
             content,
             output_format,
             uploaded_image_path
         )
-
         tasks.append(task.id)
-    
-    return{
+
+    return {
         "status": "success",
-        "message": f"Poster generation started with {variations} variations. You can check the status of your posters using the task IDs.",
+        "message": f"Poster generation started with {variations} variations.",
         "task_ids": tasks
     }
