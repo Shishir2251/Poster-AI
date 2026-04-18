@@ -17,9 +17,9 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 @router.post("/generate-poster-complete")
 async def generate_poster_complete(
     title: str = Form(...),
-    title_font: str = Form("Times new roman bold"),
+    title_font: str = Form("Rubik-Bold.ttf"),
     subtitle: str = Form(...),
-    subtitle_font: str = Form("monospace italic"),
+    subtitle_font: str = Form("Rubik-Regular.ttf"),
     tagline: str = Form("Your Tagline Here"),
     brand_name: str = Form(...),
     primary_color: str = Form(...),
@@ -69,6 +69,22 @@ ABSOLUTE TEXT RULE — ZERO TOLERANCE:
 - Do NOT render any text, letters, numbers, or characters anywhere
 - Do NOT draw placeholder bars, boxes, lines, or wireframe shapes
 - Do NOT add watermarks, decorative scripts, or any readable marks
+- Think of this as a billboard background before the text is printed on it
+
+=====================
+DESIGN DIRECTION (HIGH PRIORITY)
+=====================
+Style instruction: {design_style_prompt}
+Preset: {style_preset}
+
+This is a HIGH PRIORITY creative directive — treat it as law.
+Push the style to its fullest expression:
+- If "modern minimalist" — use bold negative space, strong single focal point,
+  sophisticated color palette, nothing unnecessary
+- If "luxury" — dramatic lighting, rich textures, gold/dark accents, cinematic feel
+- If "vintage" — warm grain, retro color grading, organic textures
+- Do NOT default to safe or generic interpretations of the style
+- The poster must look like it belongs in a high-end design portfolio
 
 =====================
 POSTER CONTEXT (FOR VISUAL DIRECTION ONLY — DO NOT DRAW)
@@ -76,12 +92,14 @@ POSTER CONTEXT (FOR VISUAL DIRECTION ONLY — DO NOT DRAW)
 This poster is for: {brand_name}
 The poster promotes: {title}
 Additional context: {subtitle}
+Brand tagline: {tagline}
 
-Use this information ONLY to decide:
-- What kind of imagery, props, or environment fits the business
-- What mood and atmosphere the poster should convey
-- What decorative elements make sense (e.g. pizza ingredients, herbs,
-  flour dust for a pizza brand — NOT the actual text)
+Use this information ONLY to inspire:
+- A unique, creative visual concept that stands out
+- Imagery, environment, and atmosphere that feels fresh and unexpected
+- Avoid generic stock-photo compositions — think like an award-winning
+  art director creating a campaign for a global brand
+- The visual should feel surprising, premium, and memorable
 
 DO NOT render any of these words as text in the image.
 
@@ -90,8 +108,6 @@ INPUT LANGUAGE
 =====================
 All input fields may be provided in Hebrew or English.
 You must understand and interpret both languages correctly.
-If input is in Hebrew, treat it as Hebrew context.
-If input is in English, treat it as English context.
 Do NOT translate — just use the meaning to guide your visual design decisions.
 
 =====================
@@ -102,59 +118,54 @@ Secondary Color: {secondary_color}
 Title Font Style: {title_font}
 Subtitle Font Style: {subtitle_font}
 
+- ALL design decisions must reflect this brand identity
+- Colors must be consistent and intentional
 - Use {primary_color} as the dominant background color
-- Use {secondary_color} only as subtle accent color in the design
+- Use {secondary_color} as accent color in decorative elements
 - Do NOT create any button, badge, or UI element
-
-=====================
-DESIGN DIRECTION (HIGH PRIORITY)
-=====================
-Style instruction: {design_style_prompt}
-Preset: {style_preset}
-
-This style instruction is a HIGH PRIORITY creative directive.
-Every visual decision — color treatment, lighting, texture, composition,
-decorative elements, mood, and atmosphere — must strongly reflect this style.
-If the style says "luxury", the poster must feel expensive and premium.
-If the style says "vintage", use warm tones, textures, and retro aesthetics.
-If the style says "minimalist", keep backgrounds clean with minimal decoration.
-The style instruction overrides generic design choices — treat it as law.
 
 =====================
 CANVAS LAYOUT ZONES (STRICT)
 =====================
 
-ZONE 1 — TOP TEXT AREA (0% to 28%):
+ZONE 1 — TOP TEXT AREA (0% to 25%):
 - Completely EMPTY — flat {primary_color} background only
-- No elements, no decorations, no shadows here
-- Must have strong contrast to support text overlay
+- No elements, no decorations, no shadows bleeding into this zone
+- Must have strong contrast to support dark or light text overlay
+- This is where title and subtitle will be added in post-production
 
-ZONE 2 — HERO VISUAL (28% to 75%):
+ZONE 2 — HERO VISUAL (25% to 62%):
 - Place the main visual subject HERE ONLY
-- Must NOT extend above 28% or below 75%
+- Must NOT extend above 25% or below 62%
+- The BOTTOM EDGE of the product must not cross 62% of canvas height
 - Scale down if needed to fit strictly within this zone
-- Add background, lighting, shadows, decorative elements here
+- Center the product both horizontally and vertically within this zone
 
-ZONE 3 — LOWER AREA (75% to 100%):
-- Completely EMPTY — flat {primary_color} background only
-- No elements, no decorations whatsoever
-- This area is reserved for text and CTA rendering later
+ZONE 3 — LOWER AREA (68% to 100%):
+- Completely EMPTY — flat clean background only
+- No elements, no decorations, no shadows from zone 2 bleeding in
+- This area is reserved for text and CTA rendering in post-production
+- Background color should match or complement {primary_color}
 
 =====================
 IMAGE RULES
 =====================
 - If a product image is provided, use it as the MAIN SUBJECT in ZONE 2
 - If no image is provided, generate a high quality, photorealistic
-  visual that fits the brand context in ZONE 2
+  hero visual that perfectly fits the brand context in ZONE 2
 - Only add: background, lighting, shadows, decorative elements
-- Do NOT alter or reimagine any provided product image
+- Do NOT alter, distort, or reimagine any provided product image
+- The product must look exactly as uploaded
 
 =====================
 OUTPUT QUALITY
 =====================
 Aspect Ratio: {output_format}
-- Premium, print-ready marketing poster
+- Premium, print-ready marketing poster aesthetic
+- Clean layout with strong visual hierarchy
+- Professional finish — this should look like a real advertisement
 - Every element fully visible inside the canvas
+- No clutter, strong focal point on the hero visual
 
 Creative variation number: {{variation_number}}
 """
