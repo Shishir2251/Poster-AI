@@ -1,7 +1,6 @@
 import os
 import base64
 import re
-# import random
 from openai import OpenAI
 from dotenv import load_dotenv
 # from rembg import remove
@@ -10,7 +9,7 @@ import json
 # from rembg import new_session, remove
 from app.services.remove_bg import remove_bg_api
 import cloudinary.uploader
-import requests
+# import requests
 import base64
 from io import BytesIO
 import cloudinary.uploader

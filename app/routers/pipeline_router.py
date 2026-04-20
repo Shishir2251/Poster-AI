@@ -2,10 +2,60 @@ from fastapi import APIRouter, UploadFile, File, Form
 import uuid
 import os
 from typing import Optional
-from app.schemas import get_language_rules
+# from app.schemas import get_language_rules
 router = APIRouter()
 
 from app.worker.tasks import generate_poster_task
+
+import random
+
+def get_random_layout() -> dict:
+    layouts = [
+        {
+            "name": "center",
+            "description": """
+COMPOSITION: CENTER FOCUSED
+- Place the main subject dead center horizontally and vertically within ZONE 2
+- Equal empty space on left and right
+- Text will be placed above and below the subject
+"""
+        },
+        {
+            "name": "left",
+            "description": """
+COMPOSITION: LEFT ALIGNED
+- Place the main subject on the LEFT side of the canvas within ZONE 2
+- Subject should occupy the left 55% of the canvas width
+- Leave the right 40% as clean, empty background
+- Text will be placed on the right side and in top/bottom zones
+"""
+        },
+        {
+            "name": "right",
+            "description": """
+COMPOSITION: RIGHT ALIGNED  
+- Place the main subject on the RIGHT side of the canvas within ZONE 2
+- Subject should occupy the right 55% of the canvas width
+- Leave the left 40% as clean, empty background
+- Text will be placed on the left side and in top/bottom zones
+"""
+        },
+        {
+            "name": "bottom_center",
+            "description": """
+COMPOSITION: BOTTOM ANCHORED
+- Place the main subject at the BOTTOM of ZONE 2, centered horizontally
+- Subject should sit at the lower portion of ZONE 2 (50% to 62%)
+- Leave the upper portion of ZONE 2 as atmospheric background
+- Creates a dramatic look with subject emerging from the bottom
+"""
+        }
+    ]
+    
+    chosen = random.choice(layouts)
+    print(f"Selected layout: {chosen['name']}")
+    # return chosen["description"]
+    return chosen
 
 UPLOAD_DIR = "uploads"
 GENERATED_DIR = "generated"
@@ -28,6 +78,7 @@ async def generate_poster_complete(
     phone: str = Form(None),
     address: str = Form(None),
     website: str = Form(None),
+    additional_info: str = Form(None),  # add after website field
     design_style_prompt: str = Form("Make this poster look modern and minimalistic with a touch of vintage"),
     style_preset: str = Form("Modern Minimal"),
     output_format: str = Form("1:1 square"),
@@ -52,8 +103,14 @@ async def generate_poster_complete(
         "tagline": tagline,
         "phone": phone or "",
         "address": address or "",
-        "website": website or ""
+        "website": website or "",
+        "additional_info": additional_info or ""
     }
+    layout_instruction = get_random_layout()
+    layout_name = layout_instruction["name"]
+    layout_description = layout_instruction["description"]
+    content["layout"] = layout_name
+
 
     base_prompt = f"""
 You are a senior professional graphic designer specializing
@@ -86,6 +143,7 @@ Push the style to its fullest expression:
 - Do NOT default to safe or generic interpretations of the style
 - The poster must look like it belongs in a high-end design portfolio
 
+
 =====================
 POSTER CONTEXT (FOR VISUAL DIRECTION ONLY — DO NOT DRAW)
 =====================
@@ -94,11 +152,15 @@ The poster promotes: {title}
 Additional context: {subtitle}
 Brand tagline: {tagline}
 
-Use this information ONLY to inspire:
-- A unique, creative visual concept that stands out
-- Imagery, environment, and atmosphere that feels fresh and unexpected
-- Avoid generic stock-photo compositions — think like an award-winning
-  art director creating a campaign for a global brand
+Use this information ONLY to inspire the visual concept:
+- Think beyond a single isolated product shot
+- Consider scenes, environments, lifestyle moments, multiple elements
+- For food brands: show ingredients, textures, preparation, abundance
+- For tech brands: show usage context, lifestyle, environment
+- For fashion: show styling, mood, environment
+- Create a rich, layered visual story — not just one object on a background
+- The visual should feel like a world, not a product catalog shot
+- Avoid generic stock-photo compositions — think editorial, cinematic, immersive
 - The visual should feel surprising, premium, and memorable
 
 DO NOT render any of these words as text in the image.
@@ -135,11 +197,11 @@ ZONE 1 — TOP TEXT AREA (0% to 25%):
 - This is where title and subtitle will be added in post-production
 
 ZONE 2 — HERO VISUAL (25% to 62%):
-- Place the main visual subject HERE ONLY
+{layout_description}
 - Must NOT extend above 25% or below 62%
 - The BOTTOM EDGE of the product must not cross 62% of canvas height
 - Scale down if needed to fit strictly within this zone
-- Center the product both horizontally and vertically within this zone
+
 
 ZONE 3 — LOWER AREA (68% to 100%):
 - Completely EMPTY — flat clean background only
