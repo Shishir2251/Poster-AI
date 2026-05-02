@@ -15,3 +15,7 @@ redis
 cloudinary
 requests
 python-bidi
+google-genai[aiohttp]
+playwright
+anthropic
+chromium
