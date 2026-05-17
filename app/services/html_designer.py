@@ -1,7 +1,4 @@
 
-#---------- working version 2-------------
-
-
 import base64
 import re
 import anthropic
@@ -21,28 +18,27 @@ CANVAS_SIZES = {
     "16:9": (1792, 1024),
 }
 
-HEBREW_FONTS = [
-    "Heebo", "Rubik", "Assistant",
-    "Frank Ruhl Libre", "Secular One", "Varela Round", "Suez One",
-]
+# HEBREW_FONTS = [
+#     "Heebo", "Rubik", "Assistant",
+#     "Frank Ruhl Libre", "Secular One", "Varela Round", "Suez One",
+# ]
 
 
 def generate_poster_html(
     background_bytes: bytes,
     content: dict,
-    output_format: str = "1:1",
-    tokens: dict = None,
+    output_format: str = "1:1"
 ) -> str:
     width, height = CANVAS_SIZES.get(output_format, (1024, 1024))
 
-    # ── Small version for Claude vision (reduces tokens) ──────────────────────
+    # ── Small version for Claude vision (reduces tokens) ─────
     img = Image.open(io.BytesIO(background_bytes))
     img.thumbnail((512, 512))
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=75)
     bg_b64_small = base64.standard_b64encode(buf.getvalue()).decode()
 
-    # ── Full res for HTML embedding ────────────────────────────────────────────
+    # ── Full res for HTML embedding ─────────
     bg_b64_full = base64.standard_b64encode(background_bytes).decode()
 
     prompt = f"""
@@ -94,7 +90,8 @@ Secondary  : {content.get("secondary_color", "#E74C3C")}
 - Hebrew/Arabic → direction:rtl; unicode-bidi:bidi-override on EVERY text element
 - English → direction:ltr
 - URLs, phones, numbers → direction:ltr; display:inline-block
-- Load Hebrew Google Font: Heebo or Rubik
+- Load Hebrew Google Font from this list: Heebo, Rubik, Assistant, Frank Ruhl Libre, Secular One, Varela Round, Suez One
+- Pick 1-2 fonts that match the poster style — vary your choice each generation
 
 FONT SIZE RULES (STRICT — canvas is {width}x{height}px static image):
 - Title: minimum 72px, bold
@@ -110,7 +107,7 @@ FONT SIZE RULES (STRICT — canvas is {width}x{height}px static image):
 - Title top 25%, CTA + contact bottom 20%, rest in middle
 - All elements position:absolute inside root div
 - Numbers/% in badge → <span style="direction:ltr;display:inline-block;">30%</span>
-- CTA: pill shape, gradient, box-shadow, min 250px wide
+- CTA: random shape, gradient, box-shadow, min 250px wide
 - Badge (only if additional_info not empty): vibrant contrasting color, right:4% top:62%
   Choose a RANDOM unique shape each generation from: circle, starburst (css clip-path polygon), 
   shield, hexagon, ribbon, diamond, rounded-rect with rotation, speech bubble
