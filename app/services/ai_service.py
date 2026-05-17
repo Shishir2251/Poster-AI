@@ -74,9 +74,7 @@ def generate_poster(prompt: str, content: dict, output_format="1:1", image_path=
     html = generate_poster_html(
         background_bytes=background_bytes,
         content=content,
-        output_format=output_format,
-        tokens={},
-    )
+        output_format=output_format)
 
     # Step 3 — Playwright renders to PNG
     print("[Step 3] Playwright rendering...")
