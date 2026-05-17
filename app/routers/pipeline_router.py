@@ -93,9 +93,9 @@ async def generate_poster_complete(
             buffer.write(await image.read())
 
     # ── Layout selection ───────────────────────────────────────────────────────
-    layout_instruction = get_random_layout()
-    layout_name = layout_instruction["name"]
-    layout_description = layout_instruction["description"]
+    # layout_instruction = get_random_layout()
+    # layout_name = layout_instruction["name"]
+    # layout_description = layout_instruction["description"]
 
     # ── Content dict (passed through to Claude designer) ──────────────────────
     content = {

@@ -95,12 +95,26 @@ Secondary  : {content.get("secondary_color", "#E74C3C")}
 - English → direction:ltr
 - URLs, phones, numbers → direction:ltr; display:inline-block
 - Load Hebrew Google Font: Heebo or Rubik
+
+FONT SIZE RULES (STRICT — canvas is {width}x{height}px static image):
+- Title: minimum 72px, bold
+- Subtitle: minimum 48px
+- Brand name: minimum 40px
+- Tagline: minimum 36px
+- CTA button text: minimum 36px
+- Badge text: minimum 28px
+- Contact/address/website: minimum 22px
+- No text element ever below 22px
+- When in doubt go BIGGER — poster is viewed scaled down on mobile feeds
+
 - Title top 25%, CTA + contact bottom 20%, rest in middle
 - All elements position:absolute inside root div
 - Numbers/% in badge → <span style="direction:ltr;display:inline-block;">30%</span>
 - CTA: pill shape, gradient, box-shadow, min 250px wide
-- Badge (only if additional_info not empty): circle/rounded, vibrant color, right:4% top:62%
-
+- Badge (only if additional_info not empty): vibrant contrasting color, right:4% top:62%
+  Choose a RANDOM unique shape each generation from: circle, starburst (css clip-path polygon), 
+  shield, hexagon, ribbon, diamond, rounded-rect with rotation, speech bubble
+  Use CSS clip-path or border-radius creatively — never the same shape twice
 ══════════════════════════════
 OUTPUT (CRITICAL)
 ══════════════════════════════

@@ -5,6 +5,10 @@ import base64
 import random
 from dotenv import load_dotenv
 from app.services.html_designer import generate_poster_html
+import re
+import json
+import anthropic
+
 
 load_dotenv()
 
@@ -86,175 +90,114 @@ def generate_poster(prompt: str, content: dict, output_format="1:1", image_path=
     return url
 
 
-# claude only version of ai_service, without nano banana background generation step. Claude will generate the full poster as HTML with CSS background, and then we render it to PNG and upload to Cloudinary.
-# """
-# ai_service.py  —  Claude-only pipeline:
-#   1. Claude → complete HTML poster (CSS background, no image needed)
-#   2. Playwright → PNG screenshot
-#   3. Cloudinary → upload & return URL
-# """
-
-# import os
-# import random
-# from dotenv import load_dotenv
-# import cloudinary.uploader
-
-# from app.services.html_designer import generate_poster_html
-# from app.services.html_renderer import render_html_to_png
-
-# load_dotenv()
-
-# GENERATED_DIR = "generated"
-# os.makedirs(GENERATED_DIR, exist_ok=True)
-
-# CANVAS_SIZES = {
-#     "1:1":  (1024, 1024),
-#     "4:5":  (1024, 1280),
-#     "9:16": (1024, 1792),
-#     "16:9": (1792, 1024),
-# }
-
-# GOLDEN_RATIO = 1.618
-
-# LAYOUT_ARCHETYPES = [
-#     "centered_hero", "top_heavy", "bottom_heavy", "asymmetric_left",
-#     "asymmetric_right", "split_panel", "diagonal_flow", "minimalist_float",
-#     "bold_typographic", "editorial_magazine", "dramatic_fullbleed",
-#     "geometric_grid", "luxury_centered", "street_poster", "vintage_stamp",
-# ]
-
-# CATEGORY_ARCHETYPE_WEIGHTS = {
-#     "food":    ["centered_hero", "bottom_heavy", "dramatic_fullbleed", "editorial_magazine"],
-#     "tech":    ["minimalist_float", "geometric_grid", "asymmetric_left", "bold_typographic"],
-#     "fashion": ["editorial_magazine", "diagonal_flow", "luxury_centered", "asymmetric_right"],
-#     "beauty":  ["luxury_centered", "minimalist_float", "centered_hero", "vintage_stamp"],
-#     "default": LAYOUT_ARCHETYPES,
-# }
-
-# COLOR_MOODS = {
-#     "energetic": {"accent": "#FF4500", "highlight": "#FFD700"},
-#     "luxury":    {"accent": "#C9A84C", "highlight": "#FFFFFF"},
-#     "fresh":     {"accent": "#27AE60", "highlight": "#E8F5E9"},
-#     "bold":      {"accent": "#E74C3C", "highlight": "#FFF176"},
-#     "calm":      {"accent": "#2980B9", "highlight": "#EAF4FB"},
-# }
 
 
-# def get_design_tokens(content: dict, width: int, height: int) -> dict:
-#     category = content.get("category", "default").lower()
-#     pool = CATEGORY_ARCHETYPE_WEIGHTS.get(category, CATEGORY_ARCHETYPE_WEIGHTS["default"])
-#     archetype = random.choice(pool)
-#     mood_key = random.choice(list(COLOR_MOODS.keys()))
-#     base_size = int(width / 14)
-#     return {
-#         "archetype": archetype,
-#         "color_mood": COLOR_MOODS[mood_key],
-#         "typography_scale": {
-#             "title":    base_size,
-#             "subtitle": int(base_size / GOLDEN_RATIO),
-#             "tagline":  int(base_size / GOLDEN_RATIO ** 2),
-#             "body":     int(base_size / GOLDEN_RATIO ** 3),
-#         },
-#         "safe_margin_x": int(width * 0.05),
-#         "safe_margin_y": int(height * 0.05),
-#         "thirds_x": [width // 3, (width * 2) // 3],
-#         "thirds_y": [height // 3, (height * 2) // 3],
-#     }
-
-
-# def generate_poster(prompt: str, content: dict, output_format="1:1", image_path=None):
-#     width, height = CANVAS_SIZES.get(output_format, (1024, 1024))
-
-#     tokens = get_design_tokens(content, width, height)
-#     print(f"[Design] Archetype: {tokens['archetype']} | Mood: {tokens['color_mood']}")
-
-#     # Step 1 — Claude generates full HTML poster (CSS background only)
-#     print("[Step 1] Claude generating HTML poster...")
-#     html = generate_poster_html(
-#         background_bytes=None,  # no image — Claude uses CSS
-#         content=content,
-#         output_format=output_format,
-#         tokens=tokens,
-#     )
-
-#     # Step 2 — Playwright renders HTML to PNG
-#     print("[Step 2] Playwright rendering HTML to PNG...")
-#     final_png = render_html_to_png(html, width=width, height=height)
-
-#     # Step 3 — Upload to Cloudinary
-#     print("[Step 3] Uploading to Cloudinary...")
-#     result = cloudinary.uploader.upload(final_png, folder="posters")
-#     url = result.get("secure_url")
-#     print(f"[Done] {url}")
-#     return url
-
-
-
-def regenerate_poster(prompt, output_format, image_url=None):
-    img_size = get_image_size(output_format)
+def regenerate_poster(prompt: str, output_format: str, image_url: str = None, original_html: str = None):
+    """
+    Regenerate by modifying the existing HTML poster based on user instructions.
+    Much faster and cheaper — no GPT image generation needed.
+    """
+    width, height = CANVAS_SIZES.get(output_format, (1024, 1024))
 
     try:
-        final_prompt = prompt
+        # ── If we have the original HTML, modify it directly ──────────────────
+        if original_html:
+            modification_prompt = f"""
+You are an elite graphic designer. You have an existing HTML marketing poster.
+The user wants to make specific changes to it.
 
-        # STEP 1 — If original poster exists, describe it first
-        if image_url:
-            vision_response = client.chat.completions.create(
-                model="gpt-4.1",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": image_url}
-                            },
-                            {
-                                "type": "text",
-                                "text": """Describe this marketing poster in detail:
-- Layout and composition
-- Background style and colors
-- All text content, fonts, sizes, colors
-- Position of every element
-- CTA button style
-- Overall visual mood"""
-                            }
-                        ]
-                    }
-                ],
-                max_tokens=800
-            )
-
-            poster_description = vision_response.choices[0].message.content
-
-            # STEP 2 — Inject description into prompt
-            final_prompt = f"""
+USER REQUESTED CHANGES:
 {prompt}
 
-=====================
-ORIGINAL POSTER VISUAL REFERENCE
-=====================
-{poster_description}
+RULES:
+- Apply ONLY what the user asked to change
+- Keep everything else exactly the same
+- Preserve all Hebrew text exactly as is — do not translate or change
+- Preserve the background image (the base64 url() value must stay untouched)
+- Preserve all font sizes, positions, and layout unless user asked to change them
+- Return ONLY the complete modified HTML — no explanation, no markdown fences
 
-CRITICAL:
-- Preserve everything above UNLESS explicitly overridden in USER REQUESTED CHANGES
-- Only change what has a new value — keep everything else identical
+ORIGINAL HTML:
+{original_html}
 """
+            response = anthropic.Anthropic().messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=8000,
+                messages=[{"role": "user", "content": modification_prompt}]
+            )
 
-        # STEP 3 — Generate
-        response = client.images.generate(
-            model="gpt-image-1",
-            prompt=final_prompt,
-            size=img_size
-        )
+            raw = response.content[0].text.strip()
+            raw = re.sub(r"^```html\s*", "", raw, flags=re.IGNORECASE)
+            raw = re.sub(r"```\s*$", "", raw)
+            modified_html = raw.strip()
 
-        image_bytes = base64.b64decode(response.data[0].b64_json)
-        upload_result = cloudinary.uploader.upload(image_bytes, folder="re_generated_posters")
-        return upload_result["secure_url"]
+        # ── Fallback: if no HTML, use vision to describe then regenerate ──────
+        elif image_url:
+            import httpx
+
+            # Download image for Claude vision
+            img_bytes = httpx.get(image_url).content
+            img_b64 = base64.b64encode(img_bytes).decode()
+
+            vision_prompt = f"""
+You are an elite graphic designer. Analyze this marketing poster and apply the following changes.
+
+USER REQUESTED CHANGES:
+{prompt}
+
+Generate a complete new HTML poster that:
+- Applies the requested changes
+- Keeps everything else the same as the original
+- Has perfect Hebrew RTL text
+- Is {width}x{height}px
+- Returns ONLY raw HTML, no markdown
+
+CANVAS: {width}x{height}px
+OUTPUT RULES:
+- Start with <!DOCTYPE html>
+- html, body: margin:0; padding:0; overflow:hidden; width:{width}px; height:{height}px
+- ONE root div: {width}px x {height}px, overflow:hidden
+- All children: position:absolute
+- Google Fonts CDN allowed
+"""
+            response = anthropic.Anthropic().messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=8000,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": img_b64,
+                            }
+                        },
+                        {"type": "text", "text": vision_prompt}
+                    ]
+                }]
+            )
+
+            raw = response.content[0].text.strip()
+            raw = re.sub(r"^```html\s*", "", raw, flags=re.IGNORECASE)
+            raw = re.sub(r"```\s*$", "", raw)
+            modified_html = raw.strip()
+
+        else:
+            raise ValueError("Either original_html or image_url must be provided")
+
+        # ── Render and upload ─────────────────────────────────────────────────
+        final_png = render_html_to_png(modified_html, width=width, height=height)
+        upload_result = cloudinary.uploader.upload(final_png, folder="re_generated_posters")
+        return {
+            "url": upload_result["secure_url"],
+            "html": modified_html  # return HTML so it can be stored for future edits
+        }
 
     except Exception as e:
         print("Regeneration failed:", e)
         raise
-
 
 
 def CleanData(text):
@@ -309,7 +252,7 @@ def generate_poster_fields(user_idea: str):
 
     try:
 
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
                 {"role": "system", "content": "You are an expert poster designer."},
