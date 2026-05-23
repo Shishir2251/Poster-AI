@@ -15,7 +15,7 @@ async def generate_logo_api(
     industry: str = Form(None),
     logo_style: str = Form(None),
     color_palette: str = Form(None),
-    language: str = Form("English"), # english default, but can be set to other languages
+    language: str = Form("Hebrew"), # hebrew default, but can be set to other languages
     reference_image: UploadFile = File(None)
 ):
     image_path = None
