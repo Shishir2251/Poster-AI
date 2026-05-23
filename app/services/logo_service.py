@@ -81,12 +81,13 @@ Color Palette: {color_palette}
 
 - If Hebrew/Arabic → direction:rtl; unicode-bidi:bidi-override on every text element
 - If English → direction:ltr
-- Load Google Font matching the style
+- Load premium Hebrew Google Font: Frank Ruhl Libre or Suez One for Hebrew, Playfair Display for English
 - Brand name: large, bold, prominent — minimum 64px
 - Tagline: smaller, elegant — minimum 32px
 - Place brand name and tagline at the bottom 25% of canvas
 - Text must be legible over the logo image
 - Add text shadow for contrast
+- Add a subtle semi-transparent dark overlay (rgba(0,0,0,0.3)) behind text area for legibility
 
 ══════════════════════════════
 OUTPUT (CRITICAL)
@@ -170,10 +171,10 @@ Colors: {color_palette}
 - Flat vector aesthetic
 - Minimal clean shapes
 - No photo realism
-- No text, letters, or symbols
+- Absolutely NO text, NO words, NO letters, NO numbers anywhere — not even decorative scripts or watermarks
 - Centered icon/mark composition
-- Suitable as a logo symbol
-- Premium, memorable, unique
+- Suitable as a logo symbol — must be truly unique, avoid clichéd combinations
+- Think deeply about the brand vision and industry to create something unexpected and memorable
 """
 
     print("[Logo Step 1] GPT generating logo visual...")
